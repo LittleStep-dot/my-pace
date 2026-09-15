@@ -50,9 +50,17 @@ export default function App(){
   useEffect(()=>localStorage.setItem(STORAGE.special,JSON.stringify(special)),[special])
   useEffect(()=>{if(profile)localStorage.setItem(STORAGE.profile,JSON.stringify(profile))},[profile])
 
+  const totalMeters = useMemo(()=>{
+    let meters = 0
+    Object.values(history).forEach(day=>Object.values(day).forEach(v=>{if(v==='done') meters+=200}))
+    Object.values(weekly).forEach(v=>{if(v==='done') meters+=1000})
+    Object.values(special).forEach(v=>{if(v==='done') meters+=3000})
+    return meters
+  },[history,weekly,special])
+
   if(!profile) return <Onboarding onFinish={setProfile}/>
 
-  const dailyGoals = profile.dailyGoalIds.map(findGoal).filter(Boolean)
+  const dailyGoals = (profile.dailyGoalIds || []).map(findGoal).filter(Boolean)
   const weeklyGoal = findGoal(profile.weeklyGoalId)
   const today = dateKey(now)
   const thisWeek = weekKey(now)
@@ -61,14 +69,6 @@ export default function App(){
   const completedCount = dailyGoals.filter(g=>todayState[g.id]==='done').length
   const restedCount = dailyGoals.filter(g=>todayState[g.id]==='rest').length
   const monthlySpecial = MONTHLY_SPECIALS[now.getMonth()%MONTHLY_SPECIALS.length]
-
-  const totalMeters = useMemo(()=>{
-    let meters = 0
-    Object.values(history).forEach(day=>Object.values(day).forEach(v=>{if(v==='done') meters+=200}))
-    Object.values(weekly).forEach(v=>{if(v==='done') meters+=1000})
-    Object.values(special).forEach(v=>{if(v==='done') meters+=3000})
-    return meters
-  },[history,weekly,special])
 
   const setDailyState = (id,state) => setHistory(prev=>{
     const current = prev[today] || {}
