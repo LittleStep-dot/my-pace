@@ -2,212 +2,43 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { CATEGORIES, GOAL_LIBRARY, MONTHLY_SPECIALS } from './data/goals'
 
-const STORAGE = {
-  profile: 'myPaceV2Profile',
-  history: 'myPaceV2History',
-  weekly: 'myPaceV2Weekly',
-  special: 'myPaceV2Special',
-  theme: 'myPaceV2Theme',
-}
-
-const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) : fallback } catch { return fallback } }
-const dateKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x }
-const weekKey = (d = new Date()) => { const x = new Date(d); const day = (x.getDay()+6)%7; x.setDate(x.getDate()-day); return dateKey(x) }
-const findGoal = id => GOAL_LIBRARY.find(g => g.id === id)
-const km = meters => meters < 1000 ? `${meters} m` : `${(meters/1000).toFixed(meters % 1000 === 0 ? 0 : 1)} km`
-const weeklyDoneCount = weekly => Object.values(weekly).reduce((sum,entry)=>{
-  if(entry==='done') return sum+1
-  if(entry && typeof entry==='object') return sum+Object.values(entry).filter(v=>v==='done').length
-  return sum
-},0)
-
-const MILESTONES = [
-  { m:500, label:'첫 500m', note:'작은 출발이 시작됐어요.' },
-  { m:1000, label:'1 km', note:'첫 1km를 내 페이스로 지나왔어요.' },
-  { m:3000, label:'3 km', note:'조금씩 리듬이 생기고 있어요.' },
-  { m:5000, label:'5 km', note:'꽤 멀리 왔어요.' },
-  { m:10000, label:'10 km', note:'두 자릿수 여정에 도착했어요.' },
-  { m:21100, label:'21.1 km', note:'하프 마라톤만큼의 여정이에요.' },
-  { m:42195, label:'42.195 km', note:'마라톤 한 번만큼 쌓였어요.' },
-  { m:100000, label:'100 km', note:'작은 행동이 정말 긴 길이 됐어요.' },
-  { m:200000, label:'200 km', note:'꾸준함이 눈에 보이는 거리가 됐어요.' },
-  { m:325000, label:'325 km', note:'서울과 부산 사이 직선거리 정도의 긴 여정이에요.' },
+const STORAGE={profile:'myPaceV2Profile',history:'myPaceV2History',weekly:'myPaceV2Weekly',special:'myPaceV2Special',theme:'myPaceV2Theme'}
+const safeParse=(v,f)=>{try{return v?JSON.parse(v):f}catch{return f}}
+const dateKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x}
+const weekKey=(d=new Date())=>{const x=new Date(d),day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);return dateKey(x)}
+const findGoal=id=>GOAL_LIBRARY.find(g=>g.id===id)
+const distance=m=>m<1000?`${m} m`:`${(m/1000).toFixed(m%1000===0?0:m<10000?2:1)} km`
+const weeklyDoneCount=w=>Object.values(w).reduce((s,e)=>s+(e==='done'?1:e&&typeof e==='object'?Object.values(e).filter(v=>v==='done').length:0),0)
+const MILESTONES=[
+ {m:100,label:'100 m',note:'작은 시작이 벌써 길이 되고 있어요.'},{m:500,label:'500 m',note:'첫걸음을 지나왔어요.'},{m:1000,label:'1 km',note:'나만의 리듬이 시작됐어요.'},{m:3000,label:'3 km',note:'익숙해지고 있어요.'},{m:5000,label:'5 km',note:'내 페이스를 발견했어요.'},{m:10000,label:'10 km',note:'꽤 멀리 왔어요.'},{m:15000,label:'15 km',note:'꾸준함이 길이 되었어요.'},{m:21100,label:'21.1 km',note:'더 멀리, 더 넓게.'},{m:30000,label:'30 km',note:'계속 나아가고 있어요.'},{m:42195,label:'42.195 km',note:'첫 번째 긴 여정을 완주했어요.'},{m:50000,label:'50 km',note:'새로운 챕터가 시작됐어요.'},{m:75000,label:'75 km',note:'평범한 하루들이 특별해졌어요.'},{m:100000,label:'100 km',note:'작은 행동이 정말 긴 길이 됐어요.'}
 ]
-
-function Logo(){return <div className="brand"><span className="mark"><i/><i/></span><span><b>My Pace</b><small>A little better, every day.</small></span></div>}
-function Buddy({small=false}){return <div className={`buddy ${small?'small':''}`}><span className="buddy-leaf">🌱</span><span className="buddy-face">•‿•</span><span className="buddy-pack">🎒</span></div>}
+function Logo(){return <div className="brand"><span className="brand-mark">⌁<i>●</i></span><span><b>My Pace</b><small>A little better, every day.</small></span></div>}
+function Buddy({small=false,mood='hello'}){return <div className={`buddy-wrap ${small?'small':''} ${mood}`}><img src={`${import.meta.env.BASE_URL}mascot.svg`} alt="My Pace 새싹 친구"/></div>}
 
 export default function App(){
-  const [now,setNow] = useState(new Date())
-  const [profile,setProfile] = useState(()=>safeParse(localStorage.getItem(STORAGE.profile),null))
-  const [history,setHistory] = useState(()=>safeParse(localStorage.getItem(STORAGE.history),{}))
-  const [weekly,setWeekly] = useState(()=>safeParse(localStorage.getItem(STORAGE.weekly),{}))
-  const [special,setSpecial] = useState(()=>safeParse(localStorage.getItem(STORAGE.special),{}))
-  const [theme,setTheme] = useState(()=>localStorage.getItem(STORAGE.theme)||'light')
-  const [tab,setTab] = useState('today')
-
-  useEffect(()=>{const id=setInterval(()=>setNow(new Date()),60000);return()=>clearInterval(id)},[])
-  useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem(STORAGE.theme,theme)},[theme])
-  useEffect(()=>localStorage.setItem(STORAGE.history,JSON.stringify(history)),[history])
-  useEffect(()=>localStorage.setItem(STORAGE.weekly,JSON.stringify(weekly)),[weekly])
-  useEffect(()=>localStorage.setItem(STORAGE.special,JSON.stringify(special)),[special])
-  useEffect(()=>{if(profile)localStorage.setItem(STORAGE.profile,JSON.stringify(profile))},[profile])
-
-  const totalMeters = useMemo(()=>{
-    let meters = 0
-    Object.values(history).forEach(day=>Object.values(day).forEach(v=>{if(v==='done') meters+=200}))
-    meters += weeklyDoneCount(weekly)*1000
-    Object.values(special).forEach(v=>{if(v==='done') meters+=500})
-    return meters
-  },[history,weekly,special])
-
-  if(!profile) return <Onboarding onFinish={setProfile}/>
-
-  const dailyGoals = (profile.dailyGoalIds || []).map(findGoal).filter(Boolean)
-  const weeklyGoalIds = profile.weeklyGoalIds || (profile.weeklyGoalId ? [profile.weeklyGoalId] : [])
-  const weeklyGoals = weeklyGoalIds.map(findGoal).filter(Boolean)
-  const today = dateKey(now)
-  const thisWeek = weekKey(now)
-  const todayState = history[today] || {}
-  const completedCount = dailyGoals.filter(g=>todayState[g.id]==='done').length
-  const restedCount = dailyGoals.filter(g=>todayState[g.id]==='rest').length
-  const dayIndex = Math.floor(new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime()/86400000)
-  const dailySpecial = MONTHLY_SPECIALS[Math.abs(dayIndex)%MONTHLY_SPECIALS.length]
-  const weeklyState = weekly[thisWeek] && typeof weekly[thisWeek]==='object' ? weekly[thisWeek] : {}
-
-  const setDailyState = (id,state) => setHistory(prev=>{
-    const current = prev[today] || {}
-    return {...prev,[today]:{...current,[id]:current[id]===state?undefined:state}}
-  })
-  const toggleWeekly = id=>setWeekly(p=>{
-    const current = p[thisWeek] && typeof p[thisWeek]==='object' ? p[thisWeek] : {}
-    return {...p,[thisWeek]:{...current,[id]:current[id]==='done'?undefined:'done'}}
-  })
-  const toggleSpecial = ()=>setSpecial(p=>({...p,[today]:p[today]==='done'?undefined:'done'}))
-
-  const createdAt = profile.createdAt ? new Date(profile.createdAt) : now
-  const hasBeenHereTwoDays = createdAt <= addDays(new Date(now.getFullYear(),now.getMonth(),now.getDate()),-2)
-  const twoDayReminder = hasBeenHereTwoDays ? dailyGoals.find(g=>{
-    const y1 = history[dateKey(addDays(now,-1))]?.[g.id]
-    const y2 = history[dateKey(addDays(now,-2))]?.[g.id]
-    return y1!=='done' && y2!=='done'
-  }) : null
-
-  const shared = { profile, dailyGoals, weeklyGoals, dailySpecial, totalMeters, history, weekly, special, now }
-
-  return <div className="app-shell"><div className="phone-frame">
-    {tab==='today' && <Today {...shared} todayState={todayState} completedCount={completedCount} restedCount={restedCount} weeklyState={weeklyState} specialDone={special[today]==='done'} setDailyState={setDailyState} toggleWeekly={toggleWeekly} toggleSpecial={toggleSpecial} twoDayReminder={twoDayReminder}/>} 
-    {tab==='journey' && <Journey {...shared}/>} 
-    {tab==='profile' && <Profile {...shared} theme={theme} setTheme={setTheme} setProfile={setProfile}/>} 
-    <Nav tab={tab} setTab={setTab}/>
-  </div></div>
+ const [now,setNow]=useState(new Date()),[profile,setProfile]=useState(()=>safeParse(localStorage.getItem(STORAGE.profile),null)),[history,setHistory]=useState(()=>safeParse(localStorage.getItem(STORAGE.history),{})),[weekly,setWeekly]=useState(()=>safeParse(localStorage.getItem(STORAGE.weekly),{})),[special,setSpecial]=useState(()=>safeParse(localStorage.getItem(STORAGE.special),{})),[theme,setTheme]=useState(()=>localStorage.getItem(STORAGE.theme)||'light'),[tab,setTab]=useState('today'),[gain,setGain]=useState(null)
+ useEffect(()=>{const id=setInterval(()=>setNow(new Date()),60000);return()=>clearInterval(id)},[])
+ useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem(STORAGE.theme,theme)},[theme])
+ useEffect(()=>localStorage.setItem(STORAGE.history,JSON.stringify(history)),[history]);useEffect(()=>localStorage.setItem(STORAGE.weekly,JSON.stringify(weekly)),[weekly]);useEffect(()=>localStorage.setItem(STORAGE.special,JSON.stringify(special)),[special]);useEffect(()=>{if(profile)localStorage.setItem(STORAGE.profile,JSON.stringify(profile))},[profile])
+ const totalMeters=useMemo(()=>{let m=0;Object.values(history).forEach(day=>{const done=Object.values(day).filter(v=>v==='done').length;m+=done*20;if(done>=3)m+=10});m+=weeklyDoneCount(weekly)*100;Object.values(special).forEach(v=>{if(v==='done')m+=50});return m},[history,weekly,special])
+ if(!profile)return <Onboarding onFinish={setProfile}/>
+ const dailyGoals=(profile.dailyGoalIds||[]).map(findGoal).filter(Boolean),weeklyGoalIds=profile.weeklyGoalIds||(profile.weeklyGoalId?[profile.weeklyGoalId]:[]),weeklyGoals=weeklyGoalIds.map(findGoal).filter(Boolean),today=dateKey(now),thisWeek=weekKey(now),todayState=history[today]||{},completedCount=dailyGoals.filter(g=>todayState[g.id]==='done').length,restedCount=dailyGoals.filter(g=>todayState[g.id]==='rest').length,dayIndex=Math.floor(new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime()/86400000),dailySpecial=MONTHLY_SPECIALS[Math.abs(dayIndex)%MONTHLY_SPECIALS.length],weeklyState=weekly[thisWeek]&&typeof weekly[thisWeek]==='object'?weekly[thisWeek]:{}
+ const flash=n=>{setGain(n);setTimeout(()=>setGain(null),900)}
+ const setDailyState=(id,state)=>setHistory(prev=>{const current=prev[today]||{},was=current[id],next=was===state?undefined:state,before=Object.values(current).filter(v=>v==='done').length,after=Object.values({...current,[id]:next}).filter(v=>v==='done').length;if(next==='done'){flash(20+(before<3&&after>=3?10:0))}return{...prev,[today]:{...current,[id]:next}}})
+ const toggleWeekly=id=>setWeekly(p=>{const current=p[thisWeek]&&typeof p[thisWeek]==='object'?p[thisWeek]:{},next=current[id]==='done'?undefined:'done';if(next==='done')flash(100);return{...p,[thisWeek]:{...current,[id]:next}}})
+ const toggleSpecial=()=>setSpecial(p=>{const next=p[today]==='done'?undefined:'done';if(next==='done')flash(50);return{...p,[today]:next}})
+ const createdAt=profile.createdAt?new Date(profile.createdAt):now,eligible=createdAt<=addDays(new Date(now.getFullYear(),now.getMonth(),now.getDate()),-2),twoDayReminder=eligible?dailyGoals.find(g=>history[dateKey(addDays(now,-1))]?.[g.id]!=='done'&&history[dateKey(addDays(now,-2))]?.[g.id]!=='done'):null
+ const shared={profile,dailyGoals,weeklyGoals,dailySpecial,totalMeters,history,weekly,special,now}
+ return <div className="app-shell"><div className="phone-frame"><div key={tab} className="tab-stage">{tab==='today'&&<Today {...shared} todayState={todayState} completedCount={completedCount} restedCount={restedCount} weeklyState={weeklyState} specialDone={special[today]==='done'} setDailyState={setDailyState} toggleWeekly={toggleWeekly} toggleSpecial={toggleSpecial} twoDayReminder={twoDayReminder}/>} {tab==='journey'&&<Journey {...shared}/>} {tab==='profile'&&<Profile {...shared} theme={theme} setTheme={setTheme} setProfile={setProfile}/>}</div>{gain&&<div className="distance-pop">+{gain}m <span>🌱</span></div>}<Nav tab={tab} setTab={setTab}/></div></div>
 }
 
-function Onboarding({onFinish}){
-  const [step,setStep]=useState(0)
-  const [name,setName]=useState('')
-  const [categories,setCategories]=useState([])
-  const [dailyIds,setDailyIds]=useState([])
-  const [weeklyIds,setWeeklyIds]=useState([])
+function Onboarding({onFinish}){const[step,setStep]=useState(0),[name,setName]=useState(''),[categories,setCategories]=useState([]),[dailyIds,setDailyIds]=useState([]),[weeklyIds,setWeeklyIds]=useState([]);const daily=GOAL_LIBRARY.filter(g=>categories.includes(g.category)&&g.cadence==='daily').sort((a,b)=>Number(b.starter)-Number(a.starter)),selectedWeekly=GOAL_LIBRARY.filter(g=>categories.includes(g.category)&&g.cadence==='weekly'),weekly=[...selectedWeekly,...GOAL_LIBRARY.filter(g=>g.cadence==='weekly'&&!selectedWeekly.some(x=>x.id===g.id))],toggle=(set,max)=>(id)=>set(p=>p.includes(id)?p.filter(x=>x!==id):(p.length<max?[...p,id]:p)),can=step===0||(step===1&&name.trim())||(step===2&&categories.length)||(step===3&&dailyIds.length===5)||(step===4&&weeklyIds.length>=2);return <div className="onboarding-shell"><div className="onboarding-card"><div className="on-progress"><i style={{width:`${((step+1)/5)*100}%`}}/></div>{step===0&&<section className="welcome"><Logo/><div className="welcome-art"><div className="welcome-copy">작은 행동이<br/><b>큰 변화를 만들어요.</b></div><Buddy/></div><h1>작은 오늘이,<br/>더 나은 나를 만들어요.</h1><p>완벽하지 않아도 괜찮아요.<br/>내 페이스로, 조금씩.</p></section>}{step===1&&<section><em className="eyebrow">1 / 4</em><h1>어떻게 불러드릴까요?</h1><p>좋아하는 이름으로 불러드릴게요.</p><input className="name-input" value={name} onChange={e=>setName(e.target.value)} placeholder="이름 또는 닉네임"/></section>}{step===2&&<section><em className="eyebrow">2 / 4</em><h1>어떤 부분을 조금<br/>바꿔보고 싶나요?</h1><div className="category-grid">{CATEGORIES.map(c=><button key={c.id} className={categories.includes(c.id)?'selected':''} onClick={()=>toggle(setCategories,99)(c.id)}><span>{c.icon}</span><b>{c.name}</b><small>{c.description}</small></button>)}</div></section>}{step===3&&<Picker step="3 / 4" title="매일 함께할 작은 목표 5개를 골라볼까요?" items={daily} ids={dailyIds} max={5} onToggle={toggle(setDailyIds,5)}/>} {step===4&&<Picker step="4 / 4" title="이번 주에 챙길 목표를 2~3개 골라볼까요?" items={weekly} ids={weeklyIds} max={3} min={2} onToggle={toggle(setWeeklyIds,3)}/>}<div className="on-actions">{step>0&&<button className="ghost" onClick={()=>setStep(s=>s-1)}>이전</button>}<button className="primary" disabled={!can} onClick={()=>step===4?onFinish({name:name.trim(),categoryIds:categories,dailyGoalIds:dailyIds,weeklyGoalIds:weeklyIds,createdAt:new Date().toISOString(),reminder:'evening'}):setStep(s=>s+1)}>{step===0?'시작하기':step===4?'My Pace 시작하기':'다음'}</button></div></div></div>}
+function Picker({step,title,items,ids,max,min=0,onToggle}){return <section><em className="eyebrow">{step}</em><h1>{title}</h1><div className="selection-count">{ids.length} / {max} 선택 {min?`· 최소 ${min}개`:''}</div><div className="goal-picker">{items.map(g=><button key={g.id} className={ids.includes(g.id)?'selected':''} onClick={()=>onToggle(g.id)}><i>{g.icon}</i><span><b>{g.title}</b><small>{g.description}</small></span><em>{ids.includes(g.id)?'✓':'○'}</em></button>)}</div></section>}
 
-  const suggestedDaily = GOAL_LIBRARY
-    .filter(g=>categories.includes(g.category) && g.cadence==='daily')
-    .sort((a,b)=>Number(b.starter)-Number(a.starter))
-  const selectedWeekly = GOAL_LIBRARY.filter(g=>categories.includes(g.category) && g.cadence==='weekly')
-  const fallbackWeekly = GOAL_LIBRARY.filter(g=>g.cadence==='weekly' && !selectedWeekly.some(x=>x.id===g.id))
-  const suggestedWeekly = [...selectedWeekly,...fallbackWeekly]
+function Today({profile,dailyGoals,weeklyGoals,dailySpecial,totalMeters,todayState,completedCount,restedCount,weeklyState,specialDone,setDailyState,toggleWeekly,toggleSpecial,twoDayReminder,now}){const greeting=now.getHours()<12?'좋은 아침이에요':now.getHours()<18?'좋은 오후예요':'좋은 저녁이에요',pace=completedCount>=3?'오늘도 내 페이스였어요.':completedCount?'조금씩 잘 가고 있어요.':'오늘도, 조금씩.',weeklyCompleted=weeklyGoals.filter(g=>weeklyState[g.id]==='done').length;return <main className="page"><header className="top"><Logo/><span className="tiny-leaf">🌱</span></header><section className="hero"><div><small>{now.getMonth()+1}월 {now.getDate()}일</small><h1>{greeting},<br/>{profile.name}님!</h1><p>{pace}</p></div><div className="hero-buddy"><span>{completedCount>=3?'와, 멋져요!':'오늘도 해봐요!'}</span><Buddy mood={completedCount>=3?'happy':'hello'}/></div></section><section className="today-card card"><div className="section-title"><div><h2>오늘의 목표</h2><p>5개 중 3개면 충분해요.</p></div><strong>{completedCount}/5</strong></div><div className="today-progress"><i style={{width:`${completedCount/5*100}%`}}/></div><div className="daily-list">{dailyGoals.map(g=>{const s=todayState[g.id];return <div className={`daily-row ${s||''}`} key={g.id}><i className="goal-icon">{g.icon}</i><span><b>{g.title}</b><small>{g.description}</small></span><button className="rest-btn" onClick={()=>setDailyState(g.id,'rest')}>{s==='rest'?'쉬는 중':'쉬기'}</button><button className="check-btn" onClick={()=>setDailyState(g.id,'done')}>{s==='done'?'✓':''}</button></div>})}</div>{completedCount>=3&&<div className="good-pace">🌿 작은 행동이 모여 오늘의 길이 되었어요. <b>+{completedCount*20+10}m</b></div>}{restedCount>0&&<div className="rest-note">쉬어가는 것도 내 페이스예요.</div>}{twoDayReminder&&<div className="water-card"><span>💧</span><div><b>{twoDayReminder.title}, 조금 쉬었네요.</b><p>괜찮아요. 오늘 다시 아주 작게 시작해봐요.</p></div></div>}</section><section className="mini-journey card"><div><span className="mini-icon">🗺️</span><p><small>지금까지 걸어온 여정</small><b>{distance(totalMeters)}</b><em>실제 이동 거리가 아닌 작은 행동의 여정이에요.</em></p></div><span>›</span></section><section className="quest-block"><div className="section-title"><div><h2>이번 주 Quest</h2><p>일주일에 2~3개의 조금 큰 걸음.</p></div><span>{weeklyCompleted}/{weeklyGoals.length}</span></div>{weeklyGoals.map(g=><button key={g.id} className={`weekly-card card ${weeklyState[g.id]==='done'?'done':''}`} onClick={()=>toggleWeekly(g.id)}><i>{g.icon}</i><span><b>{g.title}</b><small>{g.description} · +100m</small></span><em>{weeklyState[g.id]==='done'?'✓':'○'}</em></button>)}</section><section className="quest-block special-zone"><div className="section-title"><div><h2>오늘의 Special Quest ✨</h2><p>매일 새로운 작은 도전. 안 해도 괜찮아요.</p></div></div><button className={`special-card card ${specialDone?'done':''}`} onClick={toggleSpecial}><i>{dailySpecial.icon||'✨'}</i><span><b>{dailySpecial.title}</b><small>{dailySpecial.description||'오늘만 가볍게 도전해봐요.'} · +50m</small></span><em>{specialDone?'✓':'○'}</em></button></section></main>}
 
-  const toggleCategory=id=>setCategories(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])
-  const toggleDaily=id=>setDailyIds(p=>p.includes(id)?p.filter(x=>x!==id):(p.length<5?[...p,id]:p))
-  const toggleWeekly=id=>setWeeklyIds(p=>p.includes(id)?p.filter(x=>x!==id):(p.length<3?[...p,id]:p))
-  const canNext = step===0 || (step===1 && name.trim()) || (step===2 && categories.length>0) || (step===3 && dailyIds.length===5) || (step===4 && weeklyIds.length>=2)
-  const finish=()=>onFinish({name:name.trim(),categoryIds:categories,dailyGoalIds:dailyIds,weeklyGoalIds:weeklyIds,createdAt:new Date().toISOString(),reminder:'evening'})
+function Journey({totalMeters,history,weekly,special}){const next=MILESTONES.find(x=>x.m>totalMeters)||{m:150000,label:'150 km',note:'새로운 길을 만들고 있어요.'},prev=[...MILESTONES].reverse().find(x=>x.m<=totalMeters),base=prev?.m||0,pct=Math.min(100,Math.max(2,(totalMeters-base)/(next.m-base)*100)),dailyDone=Object.values(history).reduce((s,d)=>s+Object.values(d).filter(v=>v==='done').length,0);return <main className="page journey-page"><header className="top"><Logo/><span className="tiny-leaf">🌱</span></header><section className="journey-hero"><div className="sky"><span className="sun"/><span className="mountain m1"/><span className="mountain m2"/><span className="tree t1">♣</span><span className="tree t2">♣</span><span className="path"/><Buddy small/></div><div className="journey-copy"><small>지금까지 걸어온 거리</small><h1>{distance(totalMeters)}</h1><p>작은 행동들이 모여, 나만의 길을 만들고 있어요.</p></div></section><section className="next-card card"><div><small>다음 이정표</small><b>{next.label}</b><p>{next.note}</p></div><span>🚩</span><div className="route-progress"><i style={{width:`${pct}%`}}/></div><em>{distance(Math.max(0,next.m-totalMeters))} 남았어요</em></section><div className="journey-stats"><div><b>{dailyDone}</b><small>Daily 완료</small></div><div><b>{weeklyDoneCount(weekly)}</b><small>Weekly 완료</small></div><div><b>{Object.values(special).filter(v=>v==='done').length}</b><small>Special 완료</small></div></div><section className="timeline"><div className="section-title"><h2>나의 이정표</h2></div>{MILESTONES.map((m,i)=><article key={m.m} className={totalMeters>=m.m?'reached':''}><span>{totalMeters>=m.m?'✓':i===MILESTONES.findIndex(x=>x.m>totalMeters)?'🌱':'·'}</span><div><b>{m.label}</b><p>{m.note}</p></div></article>)}</section>{totalMeters>=42195&&<div className="milestone-message">🏁 <b>첫 번째 긴 여정을 완주했어요.</b><br/>특별한 하루가 아니라, 평범한 하루들이 모여 여기까지 왔어요.</div>}</main>}
 
-  return <div className="onboarding-shell">
-    <div className="onboarding-card">
-      <div className="on-progress"><i style={{width:`${((step+1)/5)*100}%`}}/></div>
-      {step===0 && <section className="welcome">
-        <Logo/><div className="welcome-art"><Buddy/></div>
-        <h1>작은 오늘이,<br/>더 나은 나를 만들어요.</h1>
-        <p>완벽하게 하지 않아도 괜찮아요.<br/>내 페이스로 조금씩 시작해봐요.</p>
-      </section>}
-      {step===1 && <section><Eyebrow>1 / 4</Eyebrow><h1>어떻게 불러드릴까요?</h1><p className="lead">좋아하는 이름으로 불러드릴게요.</p><input className="name-input" value={name} onChange={e=>setName(e.target.value)} placeholder="이름 또는 닉네임" autoFocus/></section>}
-      {step===2 && <section><Eyebrow>2 / 4</Eyebrow><h1>어떤 부분을 조금<br/>바꿔보고 싶나요?</h1><p className="lead">지금 가장 마음이 가는 분야를 골라주세요.</p><div className="category-grid">{CATEGORIES.map(c=><button key={c.id} className={categories.includes(c.id)?'selected':''} onClick={()=>toggleCategory(c.id)}><span>{c.icon}</span><b>{c.name}</b><small>{c.description}</small></button>)}</div></section>}
-      {step===3 && <section><Eyebrow>3 / 4</Eyebrow><h1>매일 함께할 작은 목표<br/>5개를 골라볼까요?</h1><p className="lead">선택한 카테고리의 모든 Daily 목표를 보여드려요. 오래 할 수 있는 목표를 골라보세요.</p><div className="selection-count">{dailyIds.length} / 5 선택 · 총 {suggestedDaily.length}개 후보</div><div className="goal-picker">{suggestedDaily.map(g=><button key={g.id} className={dailyIds.includes(g.id)?'selected':''} onClick={()=>toggleDaily(g.id)}><i>{g.icon}</i><span><b>{g.title}</b><small>{g.description}</small></span><em>{dailyIds.includes(g.id)?'✓':'○'}</em></button>)}</div></section>}
-      {step===4 && <section><Eyebrow>4 / 4</Eyebrow><h1>이번 주에 챙길 목표를<br/>2~3개 골라볼까요?</h1><p className="lead">매일 하기엔 부담스럽지만, 일주일 안에 한 번씩 챙기면 좋은 목표예요.</p><div className="selection-count">{weeklyIds.length} / 3 선택 · 최소 2개</div><div className="goal-picker">{suggestedWeekly.map(g=><button key={g.id} className={weeklyIds.includes(g.id)?'selected':''} onClick={()=>toggleWeekly(g.id)}><i>{g.icon}</i><span><b>{g.title}</b><small>{g.description}</small></span><em>{weeklyIds.includes(g.id)?'✓':'○'}</em></button>)}</div></section>}
-      <div className="on-actions">{step>0&&<button className="ghost" onClick={()=>setStep(s=>s-1)}>이전</button>}<button className="primary" disabled={!canNext} onClick={()=>step===4?finish():setStep(s=>s+1)}>{step===0?'시작하기':step===4?'My Pace 시작하기':'다음'}</button></div>
-    </div>
-  </div>
-}
-
-function Eyebrow({children}){return <span className="eyebrow">{children}</span>}
-
-function Today({profile,dailyGoals,weeklyGoals,dailySpecial,totalMeters,todayState,completedCount,restedCount,weeklyState,specialDone,setDailyState,toggleWeekly,toggleSpecial,twoDayReminder,now}){
-  const greeting=now.getHours()<12?'좋은 아침이에요':now.getHours()<18?'좋은 오후예요':'좋은 저녁이에요'
-  const paceText=completedCount>=5?'오늘의 다섯 걸음을 모두 챙겼어요!':completedCount>=3?'오늘도 내 페이스였어요.':completedCount>0?'조금씩 잘 가고 있어요.':'오늘도 하나씩 가볼까요?'
-  const weeklyCompleted=weeklyGoals.filter(g=>weeklyState[g.id]==='done').length
-  return <main className="page today-page">
-    <header className="top"><Logo/><button className="icon-btn">♧</button></header>
-    <section className="hero"><div><small>{now.getMonth()+1}월 {now.getDate()}일</small><h1>{greeting},<br/>{profile.name}님! 👋</h1><p>{paceText}</p></div><div className="hero-buddy"><span>오늘도<br/>내 페이스로!</span><Buddy/></div></section>
-
-    <section className="today-card card">
-      <div className="section-title"><div><h2>오늘의 목표</h2><p>5개 중 3개면 충분해요.</p></div><strong>{completedCount} / 5 완료</strong></div>
-      <div className="today-progress"><i style={{width:`${completedCount/5*100}%`}}/></div>
-      <div className="daily-list">{dailyGoals.map(g=>{
-        const state=todayState[g.id]
-        return <div className={`daily-row ${state||''}`} key={g.id}>
-          <i className="goal-icon">{g.icon}</i><span><b>{g.title}</b><small>{g.description}</small></span>
-          <button className="rest-btn" onClick={()=>setDailyState(g.id,'rest')}>{state==='rest'?'쉬는 중':'쉬기'}</button>
-          <button className="check-btn" onClick={()=>setDailyState(g.id,'done')}>{state==='done'?'✓':''}</button>
-        </div>
-      })}</div>
-      {completedCount>=3 && <div className="good-pace">🌱 오늘도 내 페이스였어요. 지금도 충분히 잘하고 있어요.</div>}
-      {restedCount>0 && <div className="rest-note">쉬어가기를 선택한 목표는 실패로 계산하지 않아요.</div>}
-    </section>
-
-    {twoDayReminder && <section className="water-card"><span>💧</span><div><b>{twoDayReminder.title}, 조금 쉬었네요.</b><p>오늘은 아주 가볍게 다시 시작해봐도 좋아요.</p></div></section>}
-
-    <section className="mini-journey card"><div><span className="mini-icon">🧭</span><p><small>나의 여정</small><b>{km(totalMeters)}</b><em>오늘의 작은 행동들이 길이 되고 있어요.</em></p></div><strong>›</strong></section>
-
-    <section className="quest-block"><div className="section-title"><div><h2>이번 주 Weekly Quest</h2><p>2~3개만 천천히 챙겨요.</p></div><span>{weeklyCompleted} / {weeklyGoals.length}</span></div><div className="weekly-stack">{weeklyGoals.map(g=><button key={g.id} className={`weekly-card card ${weeklyState[g.id]==='done'?'done':''}`} onClick={()=>toggleWeekly(g.id)}><i>{g.icon}</i><span><b>{g.title}</b><small>{g.description}</small></span><em>{weeklyState[g.id]==='done'?'✓':'○'}</em></button>)}</div></section>
-
-    <section className="quest-block"><div className="section-title"><div><h2>오늘의 Special Quest</h2><p>매일 바뀌는, 안 해도 괜찮은 작은 도전이에요.</p></div><span>{specialDone?'완료':'선택'}</span></div><button className={`special-card card ${specialDone?'done':''}`} onClick={toggleSpecial}><i>{dailySpecial.icon}</i><span><b>{dailySpecial.title}</b><small>{dailySpecial.description}</small></span><em>{specialDone?'✓':'›'}</em></button></section>
-  </main>
-}
-
-function Journey({totalMeters,history,weekly,special}){
-  const completedActions=Object.values(history).reduce((sum,day)=>sum+Object.values(day).filter(v=>v==='done').length,0)
-  const next=MILESTONES.find(x=>x.m>totalMeters)||MILESTONES[MILESTONES.length-1]
-  const prev=[...MILESTONES].reverse().find(x=>x.m<=totalMeters)
-  const pct=Math.min(100,totalMeters/next.m*100)
-  const recent=[...MILESTONES].filter(x=>x.m<=totalMeters).slice(-3).reverse()
-  return <main className="page journey-page">
-    <header className="top"><Logo/><button className="icon-btn">♧</button></header>
-    <section className="journey-hero"><div className="land"><span className="sun"/><span className="hill h1"/><span className="hill h2"/><span className="road"/><Buddy small/></div><div className="journey-copy"><small>지금까지 걸어온 거리</small><h1>{km(totalMeters)}</h1><p>실제로 달린 거리가 아니라,<br/>지금까지 쌓은 작은 행동의 여정이에요.</p></div></section>
-    <section className="next-card card"><div><small>다음 마일스톤</small><b>{next.label}</b><p>{Math.max(0,next.m-totalMeters).toLocaleString()}m 남았어요.</p></div><span>🧭</span><div className="route-progress"><i style={{width:`${pct}%`}}/></div></section>
-    <section className="journey-stats"><div><b>{completedActions}</b><small>작은 행동</small></div><div><b>{weeklyDoneCount(weekly)}</b><small>Weekly 완료</small></div><div><b>{Object.values(special).filter(v=>v==='done').length}</b><small>Special 완료</small></div></section>
-    <section className="timeline"><div className="section-title"><div><h2>나의 마일스톤</h2><p>조금씩 멀리 가고 있어요.</p></div></div>{recent.length?recent.map(m=><article key={m.m}><span>✓</span><div><b>{m.label}</b><p>{m.note}</p></div></article>):<article><span>🌱</span><div><b>여정이 막 시작됐어요.</b><p>첫 500m까지 천천히 가봐요.</p></div></article>} {prev?.m>=100000&&<div className="milestone-message">“여기까지 온 것도 모두 작은 하루들이 쌓인 결과예요.”</div>}</section>
-  </main>
-}
-
-function Profile({profile,dailyGoals,weeklyGoals,totalMeters,theme,setTheme,setProfile}){
-  const editName=()=>{const next=prompt('이름을 입력하세요.',profile.name);if(next?.trim())setProfile({...profile,name:next.trim()})}
-  const restart=()=>{if(confirm('온보딩부터 다시 설정할까요? 기록은 그대로 남아 있어요.')){localStorage.removeItem(STORAGE.profile);setProfile(null)}}
-  return <main className="page profile-page">
-    <header className="profile-head"><Logo/><button className="icon-btn">⚙</button></header>
-    <section className="profile-hero"><div className="avatar"><Buddy/></div><h1>{profile.name}님</h1><p>오늘도, 나의 페이스로! 💚</p></section>
-    <section className="profile-summary card"><div><b>{km(totalMeters)}</b><small>나의 여정</small></div><div><b>{dailyGoals.length}</b><small>Daily 목표</small></div><div><b>{weeklyGoals.length}</b><small>Weekly 목표</small></div></section>
-    <section className="settings card">
-      <button onClick={editName}><i>👤</i><span><b>내 정보</b><small>{profile.name}</small></span><em>›</em></button>
-      <button><i>🎯</i><span><b>나의 목표</b><small>Daily {dailyGoals.length}개 · Weekly {weeklyGoals.length}개</small></span><em>›</em></button>
-      <button><i>🔔</i><span><b>알림 설정</b><small>점심 후 / 퇴근 후 알림은 다음 단계에서 연결해요.</small></span><em>›</em></button>
-      <button onClick={()=>setTheme(theme==='light'?'dark':'light')}><i>{theme==='light'?'🌙':'☀️'}</i><span><b>테마 모드</b><small>{theme==='light'?'라이트':'다크'}</small></span><em>›</em></button>
-      <button onClick={restart}><i>↻</i><span><b>처음 목표 다시 설정하기</b><small>온보딩만 다시 진행해요.</small></span><em>›</em></button>
-    </section>
-    <section className="my-goals"><div className="section-title"><div><h2>현재 나의 목표</h2><p>Weekly: {weeklyGoals.map(g=>g.title).join(' · ')}</p></div></div>{dailyGoals.map(g=><span key={g.id}>{g.icon} {g.title}</span>)}</section>
-    <p className="closing-copy">비교하지 않고,<br/>어제의 나와 조금씩 멀리.</p>
-  </main>
-}
-
+function Profile({profile,dailyGoals,weeklyGoals,totalMeters,theme,setTheme,setProfile}){return <main className="page profile-page"><header className="profile-head"><Logo/><span>⚙️</span></header><section className="profile-hero"><div className="avatar"><Buddy/></div><h1>{profile.name}님</h1><p>나의 속도로, 더 멀리 🌱</p></section><section className="profile-summary card"><div><b>{distance(totalMeters)}</b><small>나의 여정</small></div><div><b>{dailyGoals.length}</b><small>Daily</small></div><div><b>{weeklyGoals.length}</b><small>Weekly</small></div></section><section className="settings card"><button><i>🎯</i><span><b>나의 목표</b><small>Daily 5개 · Weekly {weeklyGoals.length}개</small></span><em>›</em></button><button onClick={()=>setTheme(theme==='light'?'dark':'light')}><i>{theme==='light'?'🌙':'☀️'}</i><span><b>테마</b><small>{theme==='light'?'라이트 모드':'다크 모드'}</small></span><em>›</em></button><button><i>🔔</i><span><b>알림 설정</b><small>내 페이스에 맞는 부드러운 리마인드</small></span><em>›</em></button><button onClick={()=>{if(confirm('처음부터 다시 설정할까요?')){localStorage.clear();setProfile(null)}}}><i>↻</i><span><b>처음부터 다시 설정하기</b></span></button></section><p className="closing-copy">완벽하지 않아도 괜찮아요.<br/><b>작은 행동이 큰 변화를 만들어요.</b></p></main>}
 function Nav({tab,setTab}){return <nav className="bottom-nav">{[['today','⌂','오늘'],['journey','⌁','여정'],['profile','♙','프로필']].map(([id,icon,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}><span>{icon}</span><small>{label}</small></button>)}</nav>}
