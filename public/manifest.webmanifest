@@ -1,0 +1,10 @@
+{
+  "name": "My Pace",
+  "short_name": "My Pace",
+  "description": "A little better, every day.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f6f8",
+  "theme_color": "#665df5",
+  "lang": "ko"
+}
