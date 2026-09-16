@@ -1,5 +1,5 @@
 import Mascot from '../components/Mascot'
-import { iconFor } from '../App'
+import { distance, iconFor } from '../App'
 
 export default function Today({
   profile,
@@ -22,7 +22,6 @@ export default function Today({
       ? '좋은 오후예요,'
       : '좋은 저녁이에요,'
 
-  // TODO: Display a numeric Face Score after the product rule is defined.
   const level = Math.max(1, Math.floor(totalMeters / 500) + 1)
   const levelProgress = (totalMeters % 500) / 500 * 100
 
@@ -54,13 +53,10 @@ export default function Today({
       <section className="screen-content">
         <div className="stats-row">
           <div className="stat-card">
-            <span>🌱 Face Score</span>
-            <b>
-              —
-              <small>준비 중</small>
-            </b>
+            <span>🌱 Journey Distance</span>
+            <b>{distance(totalMeters)}</b>
             <div className="stat-bar">
-              <div style={{ width: '0%' }} />
+              <div style={{ width: `${levelProgress}%` }} />
             </div>
           </div>
 
@@ -92,7 +88,7 @@ export default function Today({
                 <div className="goal-emoji">{iconFor(goal)}</div>
                 <div className="goal-copy">
                   <strong>{goal.title}</strong>
-                  <small>{goal.description}</small>
+                  <small>{goal.description} · <em className="goal-reward">+20m</em></small>
                 </div>
                 <div className="goal-arrow">›</div>
               </button>
@@ -106,7 +102,7 @@ export default function Today({
             aria-pressed={specialDone}
             onClick={toggleSpecial}
           >
-            <span>✨ 오늘의 Special</span>
+            <span>{specialDone ? '✓ 오늘의 Special' : '✨ 오늘의 Special'}</span>
             <b>{dailySpecial.title}</b>
             <small>
               {specialDone

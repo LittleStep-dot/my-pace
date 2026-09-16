@@ -4,6 +4,7 @@ import { distance, MILESTONES } from '../App'
 export default function Journey({
   totalMeters,
   history,
+  special,
   now,
 }) {
   const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -12,9 +13,14 @@ export default function Journey({
     const date = new Date(monday)
     date.setDate(date.getDate() + index)
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-    return Object.values(history[key] || {}).some(value => value === 'done')
+    const completedDaily = Object.values(history[key] || {}).some(value => value === 'done')
+    const completedSpecial = special[key] === 'done'
+    return completedDaily || completedSpecial
   })
   const activeDays = weekDays.filter(Boolean).length
+  const weekMessage = activeDays === 0
+    ? '이번 주의 첫 걸음을 기다리고 있어요 🌱'
+    : `이번 주 ${activeDays}일 함께 걸었어요 🌱`
 
   const nextMilestone = MILESTONES.find((m) => m > totalMeters) || 100000
 
@@ -39,16 +45,10 @@ export default function Journey({
             <b>이번 주 여정</b>
             <span>{activeDays} / 7일</span>
           </div>
-          <div className="week-sprouts">
-            {[0, 1, 2, 3, 4, 5, 6].map((n) => (
-              <span
-                key={n}
-                className={weekDays[n] ? 'on' : ''}
-              >
-                🌱
-              </span>
-            ))}
+          <div className="week-progress" role="progressbar" aria-label="이번 주 활동한 날" aria-valuemin="0" aria-valuemax="7" aria-valuenow={activeDays}>
+            <div style={{ width: `${activeDays / 7 * 100}%` }} />
           </div>
+          <p className="week-message">{weekMessage}</p>
         </div>
 
         <div className="timeline-card">
