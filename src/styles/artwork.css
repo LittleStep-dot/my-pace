@@ -1,1 +1,42 @@
-.today-hero{background-image:linear-gradient(90deg,rgba(255,251,240,.90) 0%,rgba(255,251,240,.66) 45%,rgba(255,255,255,.05) 78%),url('/my-pace/hero-landscape.svg');background-size:cover;background-position:center 46%;}.today-hero .hero-sun,.today-hero .city{display:none}.journey-hero{background-image:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0)),url('/my-pace/journey-landscape.svg');background-size:cover;background-position:center}.journey-hero>.mountains,.journey-hero>.lake,.journey-hero>.path{display:none}.profile-landscape{background-image:linear-gradient(90deg,rgba(245,252,241,.25),rgba(255,255,255,0)),url('/my-pace/journey-landscape.svg');background-size:cover;background-position:center 60%}.profile-landscape>.mountains,.profile-landscape>.flowers{display:none}.mascot{background:url('/my-pace/character-main.png') center/contain no-repeat;width:90px;height:90px;filter:drop-shadow(0 8px 9px rgba(73,76,56,.16));}.mascot-sm{width:68px;height:68px}.mascot-md{width:92px;height:92px}.mascot-lg{width:118px;height:118px}.mascot>.leaf,.mascot>.body{display:none}.mascot.back{transform:scaleX(-1)}.journey-hero>.mascot.back{transform:translateX(-50%) scaleX(-1)}.mood-walk{animation:artWalk 1.5s ease-in-out infinite}.mood-happy,.mood-reward,.mood-cheer{animation:artHappy .75s ease 2}.mood-sleep{animation:artSleep 3.5s ease-in-out infinite;transform:rotate(5deg)}.quote .mascot{flex:0 0 68px}.avatar .mascot{border-radius:50%}.hero-brand,.journey-logo{text-shadow:0 1px 12px rgba(255,255,255,.9)}.hero-copy{padding:8px 10px;border-radius:14px;background:rgba(255,253,246,.46);backdrop-filter:blur(2px)}@keyframes artWalk{0%,100%{translate:-2px 0;rotate:-1deg}50%{translate:2px -3px;rotate:1deg}}@keyframes artHappy{50%{translate:0 -7px;scale:1.04}}@keyframes artSleep{0%,100%{translate:0 0}50%{translate:0 -2px}}@media(prefers-reduced-motion:reduce){.mascot{animation:none!important}}
+.today-hero{
+  background-image:linear-gradient(90deg,rgba(255,252,244,.86) 0%,rgba(255,252,244,.48) 43%,rgba(255,255,255,.03) 76%),url('/my-pace/art/bg_today.webp');
+  background-size:cover;background-position:center;isolation:isolate
+}
+.today-hero .hero-sun,.today-hero .city{display:none}
+.today-hero:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(255,255,255,.05),transparent 38%)}
+.hero-brand,.hero-copy,.hero-actions{position:absolute;z-index:2}
+.hero-copy{padding:8px 10px;border-radius:14px;background:rgba(255,253,246,.34);backdrop-filter:blur(1.5px)}
+.hero-brand,.journey-logo{text-shadow:0 1px 12px rgba(255,255,255,.92)}
+
+.journey-hero{
+  background-image:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0)),url('/my-pace/art/bg_journey.webp');
+  background-size:cover;background-position:center;isolation:isolate
+}
+.journey-hero>.mountains,.journey-hero>.lake,.journey-hero>.path,.journey-hero>.sign{display:none}
+.journey-logo,.journey-copy{z-index:3}
+.journey-copy{padding:7px 10px;border-radius:14px;background:rgba(250,255,247,.28);backdrop-filter:blur(1.5px)}
+.journey-hero>.mascot{z-index:4;bottom:3px}
+
+.profile-landscape{
+  background-image:linear-gradient(90deg,rgba(247,255,241,.36),rgba(255,255,255,0) 58%),url('/my-pace/art/bg_profile.webp');
+  background-size:cover;background-position:center;
+}
+.profile-landscape>.mountains,.profile-landscape>.flowers{display:none}
+
+.mascot{position:relative;background:none!important;filter:drop-shadow(0 8px 9px rgba(73,76,56,.16));animation:none!important}
+.mascot-sm{width:72px;height:72px}
+.mascot-md{width:96px;height:96px}
+.mascot-lg{width:122px;height:122px}
+.mascot-img{display:block;width:100%;height:100%;object-fit:contain;transform-origin:50% 88%}
+.mascot>.leaf,.mascot>.body,.question,.zzz,.spark{display:none!important}
+.mascot.back{transform:none!important}
+.journey-hero>.mascot.back{transform:translateX(-50%)!important}
+.mood-walk .mascot-img{animation:artWalk 1.5s ease-in-out infinite}
+.mood-cheer .mascot-img,.mood-happy .mascot-img,.mood-reward .mascot-img{animation:artHappy .72s ease 2}
+.mood-sleep .mascot-img{animation:artSleep 3.5s ease-in-out infinite}
+.quote .mascot{flex:0 0 72px}
+.avatar .mascot{border-radius:50%}
+@keyframes artWalk{0%,100%{transform:translateX(-2px) rotate(-1deg)}50%{transform:translate(2px,-3px) rotate(1deg)}}
+@keyframes artHappy{50%{transform:translateY(-7px) scale(1.04)}}
+@keyframes artSleep{0%,100%{transform:translateY(0) rotate(2deg)}50%{transform:translateY(-2px) rotate(2deg)}}
+@media(prefers-reduced-motion:reduce){.mascot-img{animation:none!important}}

@@ -1,1 +1,0 @@
-Production artwork directory for My Pace.
