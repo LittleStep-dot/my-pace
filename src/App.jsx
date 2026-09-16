@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './styles/app.css'
+import './styles/artwork.css'
 import { CATEGORIES, GOAL_LIBRARY, MONTHLY_SPECIALS } from './data/goals'
 import Today from './pages/Today'
 import Journey from './pages/Journey'
@@ -8,31 +9,24 @@ import BottomNav from './components/BottomNav'
 
 const STORAGE={profile:'myPaceV2Profile',history:'myPaceV2History',weekly:'myPaceV2Weekly',monthly:'myPaceV2Monthly',special:'myPaceV2Special',theme:'myPaceV2Theme'}
 const MONTHLY_IDS=new Set(['h18','l20','g20','m20','r19','r20','c19','c20','e18','e19'])
-const safeParse=(v,f)=>{try{return v?JSON.parse(v):f}catch{return f}}
-const dateKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-const monthKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-const weekKey=(d=new Date())=>{const x=new Date(d),day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);return dateKey(x)}
-const findGoal=id=>GOAL_LIBRARY.find(g=>g.id===id)
-const doneCount=obj=>Object.values(obj).reduce((s,e)=>s+(e==='done'?1:e&&typeof e==='object'?Object.values(e).filter(v=>v==='done').length:0),0)
-export const iconFor=g=>({g02:'🔤',c04:'🎧'}[g?.id]||g?.icon||'🌱')
-export const distance=m=>m<1000?`${m} m`:`${(m/1000).toFixed(m%1000===0?0:m<10000?2:1)} km`
+const cadenceOf=g=>MONTHLY_IDS.has(g.id)?'monthly':g.cadence
 export const MILESTONES=[100,500,1000,3000,5000,10000,15000,21100,30000,42195,50000,75000,100000]
-
-export default function App(){
- const [now,setNow]=useState(new Date()),[profile,setProfile]=useState(()=>safeParse(localStorage.getItem(STORAGE.profile),null)),[history,setHistory]=useState(()=>safeParse(localStorage.getItem(STORAGE.history),{})),[weekly,setWeekly]=useState(()=>safeParse(localStorage.getItem(STORAGE.weekly),{})),[monthly,setMonthly]=useState(()=>safeParse(localStorage.getItem(STORAGE.monthly),{})),[special,setSpecial]=useState(()=>safeParse(localStorage.getItem(STORAGE.special),{})),[theme,setTheme]=useState(()=>localStorage.getItem(STORAGE.theme)||'auto'),[tab,setTab]=useState('today'),[gain,setGain]=useState(null)
- useEffect(()=>{const id=setInterval(()=>setNow(new Date()),60000);return()=>clearInterval(id)},[])
- useEffect(()=>{const media=matchMedia('(prefers-color-scheme: dark)');const apply=()=>document.documentElement.dataset.theme=theme==='auto'?(media.matches?'dark':'light'):theme;apply();localStorage.setItem(STORAGE.theme,theme);media.addEventListener?.('change',apply);return()=>media.removeEventListener?.('change',apply)},[theme])
- useEffect(()=>localStorage.setItem(STORAGE.history,JSON.stringify(history)),[history]);useEffect(()=>localStorage.setItem(STORAGE.weekly,JSON.stringify(weekly)),[weekly]);useEffect(()=>localStorage.setItem(STORAGE.monthly,JSON.stringify(monthly)),[monthly]);useEffect(()=>localStorage.setItem(STORAGE.special,JSON.stringify(special)),[special]);useEffect(()=>{if(profile)localStorage.setItem(STORAGE.profile,JSON.stringify(profile))},[profile])
- const totalMeters=useMemo(()=>{let m=0;Object.values(history).forEach(day=>{const n=Object.values(day).filter(v=>v==='done').length;m+=n*20;if(n>=3)m+=10});m+=doneCount(weekly)*100;m+=doneCount(monthly)*500;Object.values(special).forEach(v=>{if(v==='done')m+=50});return m},[history,weekly,monthly,special])
- if(!profile)return <Onboarding onFinish={setProfile}/>
- const dailyGoals=(profile.dailyGoalIds||[]).map(findGoal).filter(Boolean),weeklyIds=profile.weeklyGoalIds||(profile.weeklyGoalId?[profile.weeklyGoalId]:[]),weeklyGoals=weeklyIds.map(findGoal).filter(g=>g&&!MONTHLY_IDS.has(g.id)),monthlyIds=profile.monthlyGoalIds?.length?profile.monthlyGoalIds:weeklyIds.filter(id=>MONTHLY_IDS.has(id)),monthlyGoals=monthlyIds.map(findGoal).filter(Boolean)
- const today=dateKey(now),wk=weekKey(now),mo=monthKey(now),todayState=history[today]||{},weeklyState=weekly[wk]||{},monthlyState=monthly[mo]||{},completedCount=dailyGoals.filter(g=>todayState[g.id]==='done').length,dayIndex=Math.floor(new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime()/86400000),dailySpecial=MONTHLY_SPECIALS[Math.abs(dayIndex)%MONTHLY_SPECIALS.length]
+export const distance=m=>m>=1000?`${Number((m/1000).toFixed(m%1000?1:0))}km`:`${m}m`
+export const iconFor=g=>({health:'🏋️',life:'🏠',growth:'📖',mind:'💚',relationship:'👥',career:'💻',hobby:'✨'}[g.category]||'🌱')
+const read=(k,fallback)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch{return fallback}}
+const goalsBy=c=>GOAL_LIBRARY.filter(g=>cadenceOf(g)===c)
+function App(){
+ const [profile,setProfile]=useState(()=>read(STORAGE.profile,null));const [history,setHistory]=useState(()=>read(STORAGE.history,{}));const [weekly,setWeekly]=useState(()=>read(STORAGE.weekly,{}));const [monthly,setMonthly]=useState(()=>read(STORAGE.monthly,{}));const [special,setSpecial]=useState(()=>read(STORAGE.special,{}));const [theme,setTheme]=useState(()=>localStorage.getItem(STORAGE.theme)||'auto');const [tab,setTab]=useState('today');const [gain,setGain]=useState(null);const [name,setName]=useState('');const [now,setNow]=useState(new Date())
+ useEffect(()=>{const t=setInterval(()=>setNow(new Date()),60000);return()=>clearInterval(t)},[])
+ useEffect(()=>{if(profile)localStorage.setItem(STORAGE.profile,JSON.stringify(profile))},[profile]);useEffect(()=>localStorage.setItem(STORAGE.history,JSON.stringify(history)),[history]);useEffect(()=>localStorage.setItem(STORAGE.weekly,JSON.stringify(weekly)),[weekly]);useEffect(()=>localStorage.setItem(STORAGE.monthly,JSON.stringify(monthly)),[monthly]);useEffect(()=>localStorage.setItem(STORAGE.special,JSON.stringify(special)),[special]);useEffect(()=>{localStorage.setItem(STORAGE.theme,theme);const dark=theme==='dark'||(theme==='auto'&&matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light'},[theme])
+ const today=now.toISOString().slice(0,10),weekKey=`${now.getFullYear()}-W${Math.ceil((((now-new Date(now.getFullYear(),0,1))/86400000)+new Date(now.getFullYear(),0,1).getDay()+1)/7)}`,monthKey=today.slice(0,7)
+ const dailyGoals=useMemo(()=>{if(!profile)return[];return GOAL_LIBRARY.filter(g=>(profile.dailyGoalIds||[]).includes(g.id))},[profile]);const todayState=history[today]||{};const completedCount=dailyGoals.filter(g=>todayState[g.id]==='done').length
  const flash=n=>{setGain(n);setTimeout(()=>setGain(null),850)}
- const toggleDaily=id=>setHistory(p=>{const c=p[today]||{},next=c[id]==='done'?undefined:'done',before=Object.values(c).filter(v=>v==='done').length,after=Object.values({...c,[id]:next}).filter(v=>v==='done').length;if(next==='done')flash(20+(before<3&&after>=3?10:0));return{...p,[today]:{...c,[id]:next}}})
- const togglePeriod=(setter,key,id,reward)=>setter(p=>{const c=p[key]||{},next=c[id]==='done'?undefined:'done';if(next==='done')flash(reward);return{...p,[key]:{...c,[id]:next}}})
- const toggleSpecial=()=>setSpecial(p=>{const next=p[today]==='done'?undefined:'done';if(next==='done')flash(50);return{...p,[today]:next}})
- const shared={profile,dailyGoals,weeklyGoals,monthlyGoals,dailySpecial,totalMeters,history,weekly,monthly,special,now}
- return <div className="app"><div className="viewport">{tab==='today'&&<Today {...shared} todayState={todayState} completedCount={completedCount} weeklyState={weeklyState} monthlyState={monthlyState} specialDone={special[today]==='done'} toggleDaily={toggleDaily} toggleWeekly={id=>togglePeriod(setWeekly,wk,id,100)} toggleMonthly={id=>togglePeriod(setMonthly,mo,id,500)} toggleSpecial={toggleSpecial}/>} {tab==='journey'&&<Journey {...shared}/>} {tab==='profile'&&<Profile {...shared} theme={theme} setTheme={setTheme} setProfile={setProfile}/>}</div>{gain&&<div className="gain">+{gain}m 🌱</div>}<BottomNav tab={tab} setTab={setTab}/></div>
+ const toggleDaily=id=>setHistory(prev=>{const current=prev[today]||{},next=current[id]==='done'?undefined:'done',before=Object.values(current).filter(v=>v==='done').length,after=Object.values({...current,[id]:next}).filter(v=>v==='done').length;if(next==='done')flash(20+(before<3&&after>=3?10:0));return{...prev,[today]:{...current,[id]:next}}})
+ const togglePeriod=(setter,key,id,reward)=>setter(p=>{const current=p[key]&&typeof p[key]==='object'?p[key]:{},next=current[id]==='done'?undefined:'done';if(next==='done')flash(reward);return{...p,[key]:{...current,[id]:next}}})
+ const specialQuest=MONTHLY_SPECIALS[Math.abs([...today].reduce((a,c)=>a+c.charCodeAt(0),0))%MONTHLY_SPECIALS.length],specialDone=special[today]==='done';const toggleSpecial=()=>setSpecial(p=>{const next=p[today]==='done'?undefined:'done';if(next==='done')flash(50);return{...p,[today]:next}})
+ const totalMeters=useMemo(()=>{let m=0;Object.values(history).forEach(day=>{const done=Object.values(day).filter(v=>v==='done').length;m+=done*20;if(done>=3)m+=10});Object.values(weekly).forEach(w=>m+=Object.values(w||{}).filter(v=>v==='done').length*100);Object.values(monthly).forEach(x=>m+=Object.values(x||{}).filter(v=>v==='done').length*500);Object.values(special).forEach(v=>{if(v==='done')m+=50});return m},[history,weekly,monthly,special])
+ if(!profile)return <div className="simple-onboard"><div className="sprout-logo">🌱 <b>My Pace</b></div><div className="on-mascot">🌱</div><h1>내 페이스로,<br/>조금씩.</h1><p>완벽하지 않아도 괜찮아요.<br/>작은 행동부터 시작해볼까요?</p><input value={name} onChange={e=>setName(e.target.value)} placeholder="이름을 알려주세요"/><button disabled={!name.trim()} onClick={()=>setProfile({name:name.trim(),dailyGoalIds:goalsBy('daily').slice(0,5).map(g=>g.id),weeklyGoalIds:goalsBy('weekly').slice(0,3).map(g=>g.id),monthlyGoalIds:goalsBy('monthly').slice(0,1).map(g=>g.id)})}>시작하기</button></div>
+ return <div className="app"><div className="viewport">{tab==='today'&&<Today profile={profile} dailyGoals={dailyGoals} todayState={todayState} completedCount={completedCount} toggleDaily={toggleDaily} now={now} dailySpecial={specialQuest} specialDone={specialDone} toggleSpecial={toggleSpecial}/>} {tab==='journey'&&<Journey totalMeters={totalMeters} history={history}/>} {tab==='profile'&&<Profile profile={profile} totalMeters={totalMeters} theme={theme} setTheme={setTheme} setProfile={setProfile} history={history}/>}</div><BottomNav tab={tab} setTab={setTab}/>{gain&&<div className="gain">+{gain}m 🌱</div>}</div>
 }
-
-function Onboarding({onFinish}){const[name,setName]=useState('');return <div className="simple-onboard"><div className="sprout-logo">🌱 <b>My Pace</b></div><div className="on-mascot">🌱</div><h1>작은 오늘이,<br/>더 나은 나를 만들어요.</h1><p>완벽하지 않아도 괜찮아요.<br/>내 페이스로, 조금씩.</p><input value={name} onChange={e=>setName(e.target.value)} placeholder="이름 또는 닉네임"/><button disabled={!name.trim()} onClick={()=>onFinish({name:name.trim(),categoryIds:CATEGORIES.slice(0,3).map(x=>x.id),dailyGoalIds:GOAL_LIBRARY.filter(g=>g.cadence==='daily').slice(0,5).map(g=>g.id),weeklyGoalIds:[],monthlyGoalIds:[],createdAt:new Date().toISOString()})}>My Pace 시작하기</button></div>}
+export default App
