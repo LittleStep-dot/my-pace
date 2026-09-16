@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './styles/app.css'
-import './styles/artwork.css'
+import './styles/integration.css'
 import { CATEGORIES, GOAL_LIBRARY, MONTHLY_SPECIALS } from './data/goals'
 import Today from './pages/Today'
 import Journey from './pages/Journey'
@@ -33,7 +33,7 @@ export default function App(){
  const togglePeriod=(setter,key,id,reward)=>setter(p=>{const c=p[key]||{},next=c[id]==='done'?undefined:'done';if(next==='done')flash(reward);return{...p,[key]:{...c,[id]:next}}})
  const toggleSpecial=()=>setSpecial(p=>{const next=p[today]==='done'?undefined:'done';if(next==='done')flash(50);return{...p,[today]:next}})
  const shared={profile,dailyGoals,weeklyGoals,monthlyGoals,dailySpecial,totalMeters,history,weekly,monthly,special,now}
- return <div className="app"><div className="viewport">{tab==='today'&&<Today {...shared} todayState={todayState} completedCount={completedCount} weeklyState={weeklyState} monthlyState={monthlyState} specialDone={special[today]==='done'} toggleDaily={toggleDaily} toggleWeekly={id=>togglePeriod(setWeekly,wk,id,100)} toggleMonthly={id=>togglePeriod(setMonthly,mo,id,500)} toggleSpecial={toggleSpecial}/>} {tab==='journey'&&<Journey {...shared}/>} {tab==='profile'&&<Profile {...shared} theme={theme} setTheme={setTheme} setProfile={setProfile}/>}</div>{gain&&<div className="gain">+{gain}m 🌱</div>}<BottomNav tab={tab} setTab={setTab}/></div>
+ return <div className="app app-shell"><div className="viewport">{tab==='today'&&<Today {...shared} todayState={todayState} completedCount={completedCount} weeklyState={weeklyState} monthlyState={monthlyState} specialDone={special[today]==='done'} toggleDaily={toggleDaily} toggleWeekly={id=>togglePeriod(setWeekly,wk,id,100)} toggleMonthly={id=>togglePeriod(setMonthly,mo,id,500)} toggleSpecial={toggleSpecial}/>} {tab==='journey'&&<Journey {...shared}/>} {tab==='profile'&&<Profile {...shared} theme={theme} setTheme={setTheme} setProfile={setProfile}/>}</div>{gain&&<div className="gain">+{gain}m 🌱</div>}<BottomNav tab={tab} setTab={setTab}/></div>
 }
 
 function Onboarding({onFinish}){const[name,setName]=useState('');return <div className="simple-onboard"><div className="sprout-logo">🌱 <b>My Pace</b></div><div className="on-mascot">🌱</div><h1>작은 오늘이,<br/>더 나은 나를 만들어요.</h1><p>완벽하지 않아도 괜찮아요.<br/>내 페이스로, 조금씩.</p><input value={name} onChange={e=>setName(e.target.value)} placeholder="이름 또는 닉네임"/><button disabled={!name.trim()} onClick={()=>onFinish({name:name.trim(),categoryIds:CATEGORIES.slice(0,3).map(x=>x.id),dailyGoalIds:GOAL_LIBRARY.filter(g=>g.cadence==='daily').slice(0,5).map(g=>g.id),weeklyGoalIds:[],monthlyGoalIds:[],createdAt:new Date().toISOString()})}>My Pace 시작하기</button></div>}

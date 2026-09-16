@@ -1,16 +1,40 @@
-const ART={
-  idle:'char_idle.webp',
-  cheer:'char_cheer.webp',
-  reward:'char_reward.webp',
-  happy:'char_reward.webp',
-  walk:'char_journey.webp',
-  sleep:'char_sleep.webp',
-  think:'char_idle.webp',
-}
+export default function Mascot({
+  mood = 'idle',
+  size = 'md',
+  className = '',
+  back = false,
+}) {
+  mood = back || mood === 'walk' ? 'journey' : mood === 'happy' ? 'cheer' : mood
+  const srcMap = {
+    idle: '/art/char-idle.png',
+    cheer: '/art/char-cheer.png',
+    reward: '/art/char-reward.png',
+    journey: '/art/char-journey.png',
+    sleep: '/art/char-sleep.png',
+    think: '/art/char-think.png',
+  }
 
-export default function Mascot({mood='idle',size='md',back=false}){
-  const file=back?'char_journey.webp':(ART[mood]||ART.idle)
-  return <div className={`mascot mascot-${size} mood-${mood} ${back?'back':''}`} aria-hidden="true">
-    <img className="mascot-img" src={`${import.meta.env.BASE_URL}art/${file}`} alt="" />
-  </div>
+  const sizeClass =
+    size === 'sm' ? 'mascot-sm' :
+    size === 'lg' ? 'mascot-lg' :
+    'mascot-md'
+
+  return (
+    <div className={`mascot mascot-${mood} ${sizeClass} ${className}`}>
+      <img draggable="false" src={`${import.meta.env.BASE_URL}${(srcMap[mood] || srcMap.idle).slice(1)}`} alt="" />
+      {mood === 'sleep' && (
+        <div className="mascot-zzz" aria-hidden="true">
+          <span>z</span>
+          <span>Z</span>
+          <span>Z</span>
+        </div>
+      )}
+      {mood === 'think' && (
+        <div className="mascot-question" aria-hidden="true">?</div>
+      )}
+      {(mood === 'reward' || mood === 'cheer') && (
+        <div className="mascot-sparkle" aria-hidden="true">✨</div>
+      )}
+    </div>
+  )
 }

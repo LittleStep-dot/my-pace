@@ -1,0 +1,38 @@
+/* Existing onboarding, reward feedback and theme behavior retained for the final layout. */
+.gain{position:fixed;z-index:60;left:50%;bottom:95px;transform:translateX(-50%);background:#286d45;color:#fff;padding:9px 16px;border-radius:30px;animation:gain .85s ease both}
+.simple-onboard{min-height:100dvh;max-width:430px;margin:auto;padding:90px 28px;background:linear-gradient(#dff4e1,#fffaf0);text-align:center}
+.sprout-logo{font-size:26px;color:#246344}.on-mascot{font-size:80px;margin:50px}
+.simple-onboard h1{font-size:30px}.simple-onboard p{color:#65757b;line-height:1.7}
+.simple-onboard input{width:100%;padding:16px;border:1px solid #dbe3dc;border-radius:16px;margin:20px 0}
+.simple-onboard button{width:100%;padding:16px;border:0;border-radius:16px;background:#4caf50;color:#fff;font-weight:700}
+.simple-onboard button:disabled{opacity:.4}
+.theme-row{grid-template-columns:34px 1fr auto}.theme-row select{min-width:78px}
+.goal-copy{min-width:0;overflow-wrap:anywhere}.today-encourage .mascot{flex-shrink:0}
+button{cursor:pointer}button:disabled{cursor:default}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #2f7d45;outline-offset:3px}
+@keyframes gain{0%{opacity:0;translate:0 15px}30%{opacity:1}100%{opacity:0;translate:0 -20px}}
+[data-theme=dark] .app-shell,[data-theme=dark] .screen{background:#17211d;color:#eef4ef}
+[data-theme=dark] .stat-card,[data-theme=dark] .goal-list,[data-theme=dark] .goal-row,[data-theme=dark] .special-card,[data-theme=dark] .week-card,[data-theme=dark] .timeline-card,[data-theme=dark] .journey-message,[data-theme=dark] .profile-identity,[data-theme=dark] .profile-stats,[data-theme=dark] .settings-card,[data-theme=dark] .today-encourage,[data-theme=dark] .next-milestone{background:#24302a;color:#eef4ef}
+[data-theme=dark] .goal-copy strong,[data-theme=dark] .settings-card button{color:#eef4ef}
+[data-theme=dark] .stat-card span,[data-theme=dark] .profile-copy p,[data-theme=dark] .today-encourage p,[data-theme=dark] .journey-message p{color:#bdcec3}
+[data-theme=dark] .bottom-nav{background:#18231fee}
+@media(prefers-reduced-motion:reduce){.gain{animation:none}}
+.hero-logo{width:160px;max-width:48%;height:46px;object-fit:contain;object-position:left center}
+.today-hero{height:252px;background-position:center;isolation:isolate}
+.today-hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(255,253,245,.88),rgba(255,253,245,.58) 50%,transparent)}
+.hero-copy{margin-top:20px}.today-screen>.screen-content{position:relative;margin-top:-12px;padding-top:0}
+.journey-hero{height:310px;background-position:center}.journey-walker{bottom:10px}.journey-walker .mascot{width:100px}
+.journey-screen>.screen-content{position:relative;margin-top:-10px;border-radius:24px 24px 0 0;background:#fafbf7}
+.journey-copy{text-align:center;margin:0 0 18px}.journey-copy h1{font-size:24px}.journey-copy p{margin-top:5px}
+.profile-avatar{border:2px solid white;border-radius:50%;overflow:hidden;background:#f8faf5}
+.profile-identity{min-height:138px}.profile-copy h2{font-size:24px}
+.profile-landscape{height:190px;background-position:center bottom}.profile-rest-copy{left:18px;top:20px;padding:6px;background:rgba(255,255,255,.78);border-radius:12px}.profile-rest-copy b{font-size:17px}
+.profile-sleep-mascot .mascot{width:100px}.profile-sleep-mascot{right:26px;bottom:6px}
+.mascot img{border-radius:12px}.today-encourage .mascot{width:82px}.today-encourage{padding:10px}
+.goal-manager{padding:24px 16px}.manager-head{display:flex;align-items:center;gap:12px}.manager-head h1{font-size:24px;margin:0}.manager-head p{font-size:13px;line-height:1.5}.manager-head>button{font-size:28px;border:0;background:none;color:inherit}
+.goal-tabs{display:flex;gap:8px;margin:18px 0}.goal-tabs button{flex:1;border:1px solid #d6e3d8;border-radius:12px;padding:12px 4px;background:#fff;color:#395b45}.goal-tabs small{margin-left:6px}.goal-tabs .active{background:#286d45;color:#fff}
+.goal-guide,.goal-warning{font-size:13px;margin:12px 0;line-height:1.5}.goal-warning{color:#587546}
+.goal-picker{display:grid;gap:8px}.goal-picker button{display:grid;grid-template-columns:30px 1fr 22px;gap:8px;text-align:left;padding:12px;border:1px solid #e0e8df;border-radius:14px;background:white;color:#26333a}.goal-picker button.selected{border-color:#4caf50;background:#edf7e9}.goal-picker i,.goal-picker em{font-style:normal}.goal-picker b,.goal-picker small{display:block}.goal-picker small{font-size:12px;line-height:1.5;margin-top:4px;color:#63756b}
+.manager-actions{position:sticky;bottom:84px;display:flex;gap:10px;padding:14px 0;background:#fafbf7}.manager-actions button{flex:1;border:0;border-radius:12px;padding:14px;background:#e4ebe1}.manager-actions .save{background:#286d45;color:white}
+[data-theme=dark] .journey-screen>.screen-content,[data-theme=dark] .manager-actions{background:#17211d}
+[data-theme=dark] .journey-copy{color:#eef4ef}[data-theme=dark] .journey-copy p{color:#bdcec3}
+[data-theme=dark] .goal-picker button{background:#24302a;color:#eef4ef}[data-theme=dark] .goal-picker button.selected{background:#31513a}[data-theme=dark] .goal-picker small{color:#bdcec3}
