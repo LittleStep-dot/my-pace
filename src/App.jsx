@@ -29,7 +29,7 @@ export default function App(){
  const flash=n=>{setGain(n);setTimeout(()=>setGain(null),850)}
  const toggleDaily=id=>setHistory(p=>{const c=p[today]||{},next=c[id]==='done'?undefined:'done',before=Object.values(c).filter(v=>v==='done').length,after=Object.values({...c,[id]:next}).filter(v=>v==='done').length;if(next==='done')flash(20+(before<3&&after>=3?10:0));return{...p,[today]:{...c,[id]:next}}})
  const toggleSpecial=()=>setSpecial(p=>{const next=p[today]==='done'?undefined:'done';if(next==='done')flash(50);return{...p,[today]:next}})
- const shared={profile,dailyGoals,dailySpecial,totalMeters,history,now}
+ const shared={profile,dailyGoals,dailySpecial,totalMeters,history,special,now}
  return <div className="app app-shell"><div className="viewport">{tab==='today'&&<Today {...shared} todayState={todayState} completedCount={completedCount} specialDone={special[today]==='done'} toggleDaily={toggleDaily} toggleSpecial={toggleSpecial}/>} {tab==='journey'&&<Journey {...shared}/>} {tab==='profile'&&<Profile {...shared} theme={theme} setTheme={setTheme} setProfile={setProfile}/>}</div>{gain&&<div className="gain">+{gain}m 🌱</div>}<BottomNav tab={tab} setTab={setTab}/></div>
 }
 
