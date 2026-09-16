@@ -1,0 +1,1 @@
+export default function BottomNav({tab,setTab}){return <nav className="bottom-nav">{[['today','◒','오늘'],['journey','♮','여정'],['profile','♙','프로필']].map(([id,icon,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}><i>{icon}</i><span>{label}</span></button>)}</nav>}
