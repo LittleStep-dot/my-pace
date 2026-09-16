@@ -183,4 +183,9 @@ export const MONTHLY_SPECIALS = [
   { id:'s10', icon:'🗂️', title:'디지털 파일 20개 정리하기', description:'사진, 다운로드, 문서 중 하나를 골라 가볍게 정리해보세요.' },
   { id:'s11', icon:'👜', title:'가방 속 한 번 비우기', description:'매일 들고 다니는 가방을 한 번 완전히 비우고 정리해보세요.' },
   { id:'s12', icon:'🧴', title:'욕실 소모품 정리하기', description:'다 쓴 용기나 오래된 샘플을 한 번 정리해보세요.' },
+  // Former weekly/monthly goal ideas now appear only as optional Special Quests.
+  ...GOAL_LIBRARY.filter(goal => goal.cadence === 'weekly').map(goal => ({
+    ...goal,
+    id: `special-${goal.id}`,
+  })),
 ]

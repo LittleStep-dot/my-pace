@@ -11,8 +11,7 @@ export default function Today({
   specialDone,
   toggleSpecial,
   now,
-  weeklyGoals, weeklyState, toggleWeekly,
-  monthlyGoals, monthlyState, toggleMonthly,
+  totalMeters,
 }) {
   const greetingHour = now.getHours()
 
@@ -23,8 +22,9 @@ export default function Today({
       ? '좋은 오후예요,'
       : '좋은 저녁이에요,'
 
-  const faceScore = Math.min(100, 68 + completedCount * 4)
-  const level = Math.max(1, Math.floor(completedCount / 2) + 1)
+  // TODO: Display a numeric Face Score after the product rule is defined.
+  const level = Math.max(1, Math.floor(totalMeters / 500) + 1)
+  const levelProgress = (totalMeters % 500) / 500 * 100
 
   const mood =
     completedCount >= dailyGoals.length && dailyGoals.length > 0
@@ -56,11 +56,11 @@ export default function Today({
           <div className="stat-card">
             <span>🌱 Face Score</span>
             <b>
-              {faceScore}
-              <small>/100</small>
+              —
+              <small>준비 중</small>
             </b>
             <div className="stat-bar">
-              <div style={{ width: `${faceScore}%` }} />
+              <div style={{ width: '0%' }} />
             </div>
           </div>
 
@@ -68,7 +68,7 @@ export default function Today({
             <span>👑 Journey Level</span>
             <b>Lv. {level}</b>
             <div className="stat-bar yellow">
-              <div style={{ width: '54%' }} />
+              <div style={{ width: `${levelProgress}%` }} />
             </div>
           </div>
         </div>
@@ -100,9 +100,6 @@ export default function Today({
           })}
         </div>
 
-        <PeriodGoals title="이번 주 목표" goals={weeklyGoals} state={weeklyState} onToggle={toggleWeekly} reward={100} />
-        <PeriodGoals title="이번 달 목표" goals={monthlyGoals} state={monthlyState} onToggle={toggleMonthly} reward={500} />
-
         {dailySpecial && (
           <button
             className={`special-card ${specialDone ? 'done' : ''}`}
@@ -130,21 +127,4 @@ export default function Today({
       </section>
     </main>
   )
-}
-
-function PeriodGoals({ title, goals, state, onToggle, reward }) {
-  if (!goals.length) return null
-  const completed = goals.filter(goal => state[goal.id] === 'done').length
-  return <section aria-label={title}>
-    <div className="section-head"><h2>{title}</h2><span>{completed} / {goals.length} 완료</span></div>
-    <div className="goal-list">{goals.map(goal => {
-      const done = state[goal.id] === 'done'
-      return <button key={goal.id} className={`goal-row ${done ? 'done' : ''}`} aria-pressed={done} onClick={() => onToggle(goal.id)}>
-        <div className="goal-check">{done ? '✓' : ''}</div>
-        <div className="goal-emoji">{iconFor(goal)}</div>
-        <div className="goal-copy"><strong>{goal.title}</strong><small>{goal.description} · +{reward}m</small></div>
-        <div className="goal-arrow">›</div>
-      </button>
-    })}</div>
-  </section>
 }

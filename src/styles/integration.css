@@ -1,11 +1,16 @@
 /* Existing onboarding, reward feedback and theme behavior retained for the final layout. */
 .gain{position:fixed;z-index:60;left:50%;bottom:95px;transform:translateX(-50%);background:#286d45;color:#fff;padding:9px 16px;border-radius:30px;animation:gain .85s ease both}
-.simple-onboard{min-height:100dvh;max-width:430px;margin:auto;padding:90px 28px;background:linear-gradient(#dff4e1,#fffaf0);text-align:center}
-.sprout-logo{font-size:26px;color:#246344}.on-mascot{font-size:80px;margin:50px}
-.simple-onboard h1{font-size:30px}.simple-onboard p{color:#65757b;line-height:1.7}
-.simple-onboard input{width:100%;padding:16px;border:1px solid #dbe3dc;border-radius:16px;margin:20px 0}
-.simple-onboard button{width:100%;padding:16px;border:0;border-radius:16px;background:#4caf50;color:#fff;font-weight:700}
-.simple-onboard button:disabled{opacity:.4}
+.simple-onboard{width:min(100%,430px);min-height:100dvh;margin:auto;padding:28px 28px 96px;background:linear-gradient(#dff4e1,#fffaf0);position:relative;text-align:center}
+.simple-onboard .on-progress{height:5px;margin-bottom:44px;border-radius:999px;background:#dbe5dc;overflow:hidden}.simple-onboard .on-progress i{display:block;height:100%;border-radius:inherit;background:#4caf50;transition:width .3s ease}
+.on-logo{width:178px;height:58px;object-fit:contain}.on-mascot{height:180px;margin:34px 0 18px;display:grid;place-items:center}.on-mascot .mascot{width:150px}
+.simple-onboard h1{font-size:30px;line-height:1.28;margin:18px 0 10px}.simple-onboard p{color:#65757b;line-height:1.7;margin:0}
+.on-step{display:block;text-align:left;color:#2f7d45;font-weight:800}.simple-onboard>section:not(.on-welcome){text-align:left}
+.simple-onboard input{width:100%;padding:16px;border:1px solid #dbe3dc;border-radius:16px;margin:28px 0;background:#fff;color:#26333a}
+.on-categories{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}.on-categories button,.on-goals button{border:1px solid #dbe3dc;background:#fff;color:#26333a}.on-categories button{min-height:112px;padding:14px;border-radius:16px;text-align:left}.on-categories button.selected,.on-goals button.selected{border-color:#4caf50;background:#edf7e9}.on-categories span{font-size:24px}.on-categories b,.on-categories small{display:block}.on-categories b{margin-top:7px}.on-categories small{margin-top:4px;color:#718078;font-size:11px;line-height:1.35}
+.simple-onboard .selection-count{text-align:right;margin:18px 0 8px;color:#2f7d45;font-weight:800}.simple-onboard .goal-warning{margin:0 0 10px;padding:10px;border-radius:12px;background:#fff6dd;color:#715c22;font-size:12px;line-height:1.45}
+.on-goals{max-height:48dvh;overflow:auto;display:grid;gap:8px;padding-right:2px}.on-goals button{min-height:68px;padding:10px 12px;border-radius:15px;display:grid;grid-template-columns:34px 1fr 22px;align-items:center;gap:8px;text-align:left}.on-goals i,.on-goals em{font-style:normal}.on-goals i{font-size:22px}.on-goals b,.on-goals small{display:block}.on-goals small{margin-top:3px;color:#718078;font-size:11px;line-height:1.4}.on-goals em{color:#3d9f48;font-size:18px}
+.simple-onboard .on-actions{position:absolute;left:28px;right:28px;bottom:26px;display:flex;gap:10px}.simple-onboard .on-actions button{height:50px;border:0;border-radius:16px;font-weight:800}.simple-onboard .on-actions .ghost{width:88px;background:#e6ece4;color:#52645a}.simple-onboard .on-actions .primary{flex:1;background:#4caf50;color:#fff}.simple-onboard .on-actions button:disabled{opacity:.4}
+[data-theme=dark] .simple-onboard{background:linear-gradient(#1b3028,#17211d);color:#eef4ef}[data-theme=dark] .simple-onboard input,[data-theme=dark] .on-categories button,[data-theme=dark] .on-goals button{background:#24302a;color:#eef4ef;border-color:#405048}[data-theme=dark] .on-categories button.selected,[data-theme=dark] .on-goals button.selected{background:#31513a}
 .theme-row{grid-template-columns:34px 1fr auto}.theme-row select{min-width:78px}
 .goal-copy{min-width:0;overflow-wrap:anywhere}.today-encourage .mascot{flex-shrink:0}
 button{cursor:pointer}button:disabled{cursor:default}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #2f7d45;outline-offset:3px}

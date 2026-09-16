@@ -15,7 +15,7 @@ export default function Profile({
     Object.values(day).some((v) => v === 'done')
   ).length
 
-  const faceScore = Math.min(100, 70 + Math.min(30, activeDays))
+  // TODO: Display a numeric Face Score after the product rule is defined.
   const level = Math.max(1, Math.floor(totalMeters / 500) + 1)
 
   if (editing) return <main className="screen profile-screen"><GoalManager profile={profile} save={next => { setProfile(next); setEditing(false) }} cancel={() => setEditing(false)} /></main>
@@ -52,8 +52,8 @@ export default function Profile({
           </div>
           <div>
             <span>🌱</span>
-            <b>{faceScore}</b>
-            <small>Face Score</small>
+            <b>—</b>
+            <small>Face Score · 준비 중</small>
           </div>
           <div>
             <span>🔥</span>
