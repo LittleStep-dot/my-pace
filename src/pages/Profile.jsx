@@ -33,7 +33,7 @@ export default function Profile({
       <section className="profile-head"><h1>마이페이지</h1></section>
       <section className="screen-content">
         <div className="profile-identity">
-          <div className="profile-avatar"><Mascot mood="profile" size="md" /></div>
+          <div className="profile-avatar"><img src={`${import.meta.env.BASE_URL}art/avatar-profile.png`} alt="" /></div>
           <div className="profile-copy">
             {editingName ? <form className="name-edit" onSubmit={(event) => { event.preventDefault(); saveName() }}><input autoFocus value={name} onChange={(event) => setName(event.target.value)} aria-label="이름 수정" /><button type="submit" aria-label="이름 저장">✓</button></form> : <h2>{profile.name}님</h2>}
             <p>나만의 속도로, 꾸준히 🌱</p>
@@ -48,17 +48,17 @@ export default function Profile({
         </div>
 
         <div className="settings-card">
-          <button onClick={() => setView('goals')}><i>🎯</i><span>내 목표</span><b>›</b></button>
-          <button onClick={() => setView('report')}><i>📊</i><span>통계 리포트</span><b>›</b></button>
-          <button onClick={() => setView('reminders')}><i>🔔</i><span>리마인더 설정</span><b>›</b></button>
-          <div className="theme-row"><i>🎨</i><span>테마 설정</span><select aria-label="테마 설정" value={theme} onChange={(event) => setTheme(event.target.value)}><option value="auto">자동</option><option value="light">라이트</option><option value="dark">다크</option></select></div>
-          <button onClick={() => setView('data')}><i>💾</i><span>데이터 관리</span><b>›</b></button>
+          <button className="settings-row" onClick={() => setView('goals')}><i>🎯</i><span>내 목표</span><b>›</b></button>
+          <button className="settings-row" onClick={() => setView('report')}><i>📊</i><span>통계 리포트</span><b>›</b></button>
+          <button className="settings-row" onClick={() => setView('reminders')}><i>🔔</i><span>리마인더 설정</span><b>›</b></button>
+          <div className="settings-row theme-row"><i>🎨</i><span>테마 설정</span><select aria-label="테마 설정" value={theme} onChange={(event) => setTheme(event.target.value)}><option value="auto">자동</option><option value="light">라이트</option><option value="dark">다크</option></select></div>
+          <button className="settings-row" onClick={() => setView('data')}><i>💾</i><span>데이터 관리</span><b>›</b></button>
         </div>
 
         <div className="profile-landscape">
           <div className="profile-rest-slogan" aria-label="Better Than Yesterday"><b>Better</b><b>Than</b><b>Yesterday</b><span>♡</span></div>
           <div className="profile-rest-copy"><b>충분히<br />쉬는 것도<br />중요해요.</b><span>♡</span></div>
-          <div className="profile-sleep-mascot"><Mascot mood="sleep" size="sm" /></div>
+          <div className="profile-sleep-mascot"><Mascot mood="sleep" size="sm" className="sleep-character-wrap" /></div>
         </div>
       </section>
     </main>

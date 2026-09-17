@@ -9,7 +9,9 @@ export default function Today({
   const greeting = now.getHours() < 12 ? '좋은 아침이에요,' : now.getHours() < 18 ? '좋은 오후예요,' : '좋은 저녁이에요,'
   const stage = journeyStage(totalMeters)
   const specialDone = Boolean(specialState.completedAt)
-  const mood = completedCount >= 3 ? 'reward' : completedCount === 2 ? 'cheer' : completedCount === 1 ? 'idle' : 'think'
+  const mood = completedCount >= 3 ? 'today-success' : completedCount === 2 ? 'today-2' : completedCount === 1 ? 'today-1' : 'today-rest'
+  const hour = now.getHours()
+  const atmosphere = hour >= 5 && hour < 11 ? 'morning' : hour < 17 ? 'daytime' : hour < 21 ? 'evening' : 'night'
   const encouragement = completedCount >= 3
     ? '오늘의 작은 성공! 더 하지 않아도 충분해요. 💚'
     : completedCount === 2 ? '조금씩 쌓이고 있어요! ✨'
@@ -18,14 +20,14 @@ export default function Today({
 
   return (
     <main className="screen today-screen">
-      <section className="today-hero">
+      <section className={`today-hero atmosphere-${atmosphere}`}>
         <div className="hero-top"><img className="hero-logo" src={`${import.meta.env.BASE_URL}art/logo_lockup.png`} alt="My Pace — Small Steps, Big Changes" /><div className="hero-actions"><button aria-label="알림">🔔</button></div></div>
         <div className="hero-copy"><small>{greeting}</small><h1>{profile.name}님!</h1><p>오늘도, 당신의 속도로 💚</p></div>
       </section>
 
       <section className="screen-content">
         <div className="stats-row">
-          <div className="stat-card"><span>🌱 Journey Distance</span><b>{distance(totalMeters)}</b><div className="stat-bar"><div style={{ width: `${stage.progress}%` }} /></div></div>
+          <div className="stat-card"><span>🌱 여정 거리</span><b>{distance(totalMeters)}</b><div className="stat-bar"><div style={{ width: `${stage.progress}%` }} /></div></div>
           <div className="stat-card"><span>{stage.current.icon} 현재 여정 단계</span><b className="stage-name">{stage.current.name}</b><div className="stat-bar yellow"><div style={{ width: `${stage.progress}%` }} /></div></div>
         </div>
 
@@ -48,6 +50,7 @@ export default function Today({
         </div>
 
         <div className={`special-card weekly-special ${specialDone ? 'done' : ''}`}>
+          <Mascot mood="special" size="sm" className="special-mascot" />
           <button type="button" className="special-complete" aria-pressed={specialDone} disabled={specialState.legacyReward} onClick={toggleSpecial}>
             <span>{specialDone ? '✓ 이번 주 Special Quest' : '✨ 이번 주 Special Quest'}</span><b>{weeklySpecial.title}</b>
             <small>{specialDone ? '완료했어요! +50m' : '약 20분 · 이번 주 편한 날에 · +50m'}</small>

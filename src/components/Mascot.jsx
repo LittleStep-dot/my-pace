@@ -4,15 +4,17 @@ export default function Mascot({
   className = '',
   back = false,
 }) {
-  mood = back || mood === 'walk' ? 'journey' : mood === 'happy' ? 'cheer' : mood
+  mood = back || mood === 'walk' ? 'journey' : mood
   const srcMap = {
-    idle: '/art/char-idle.png',
-    cheer: '/art/char-cheer.png',
-    reward: '/art/char-reward.png',
-    journey: '/art/char_journey.png',
-    profile: '/art/char_profile.png',
-    sleep: '/art/char_sleep.png',
-    think: '/art/char-think.png',
+    onboarding: '/art/char-onboarding.png',
+    'today-rest': '/art/char-today-rest.png',
+    'today-1': '/art/char-today-1.png',
+    'today-2': '/art/char-today-2.png',
+    'today-success': '/art/char-today-success.png',
+    journey: '/art/char-journey.png',
+    profile: '/art/char-profile.png',
+    sleep: '/art/char-sleep.png',
+    special: '/art/char-special.png',
   }
 
   const sizeClass =
@@ -22,19 +24,9 @@ export default function Mascot({
 
   return (
     <div className={`mascot mascot-${mood} ${sizeClass} ${className}`}>
-      <img draggable="false" src={`${import.meta.env.BASE_URL}${(srcMap[mood] || srcMap.idle).slice(1)}`} alt="" />
+      <img draggable="false" src={`${import.meta.env.BASE_URL}${(srcMap[mood] || srcMap.onboarding).slice(1)}`} alt="" />
       {mood === 'sleep' && (
-        <div className="mascot-zzz" aria-hidden="true">
-          <span>z</span>
-          <span>Z</span>
-          <span>Z</span>
-        </div>
-      )}
-      {mood === 'think' && (
-        <div className="mascot-question" aria-hidden="true">?</div>
-      )}
-      {(mood === 'reward' || mood === 'cheer') && (
-        <div className="mascot-sparkle" aria-hidden="true">✨</div>
+        <span className="sleep-zzz" aria-hidden="true"><i>z</i><b>Z</b><strong>Z</strong></span>
       )}
     </div>
   )
