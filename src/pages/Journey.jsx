@@ -1,20 +1,22 @@
 import Mascot from '../components/Mascot'
-import { distance, MILESTONES } from '../App'
+import { JOURNEY_STAGES, addDays, dateKey, distance, journeyStage, startOfWeek } from '../lib/product'
 
 export default function Journey({
   totalMeters,
   history,
-  special,
+  legacySpecial,
+  weeklySpecials,
   now,
 }) {
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  monday.setDate(monday.getDate() - (monday.getDay() + 6) % 7)
+  const monday = startOfWeek(now)
+  const currentWeekKey = dateKey(monday)
+  const weeklyCompletionDate = weeklySpecials[currentWeekKey]?.completedAt
+    ? dateKey(new Date(weeklySpecials[currentWeekKey].completedAt))
+    : null
   const weekDays = Array.from({length: 7}, (_, index) => {
-    const date = new Date(monday)
-    date.setDate(date.getDate() + index)
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    const key = dateKey(addDays(monday, index))
     const completedDaily = Object.values(history[key] || {}).some(value => value === 'done')
-    const completedSpecial = special[key] === 'done'
+    const completedSpecial = legacySpecial[key] === 'done' || weeklyCompletionDate === key
     return completedDaily || completedSpecial
   })
   const activeDays = weekDays.filter(Boolean).length
@@ -22,7 +24,8 @@ export default function Journey({
     ? '이번 주의 첫 걸음을 기다리고 있어요 🌱'
     : `이번 주 ${activeDays}일 함께 걸었어요 🌱`
 
-  const nextMilestone = MILESTONES.find((m) => m > totalMeters) || 100000
+  const stage = journeyStage(totalMeters)
+  const nextMilestone = stage.next?.meters || JOURNEY_STAGES.at(-1).meters
 
   return (
     <main className="screen journey-screen">
@@ -54,13 +57,13 @@ export default function Journey({
         <div className="timeline-card">
           <h2>나의 여정 · {distance(totalMeters)}</h2>
 
-          {MILESTONES.slice(0, 6).map((m) => {
-            const reached = totalMeters >= m
+          {JOURNEY_STAGES.slice(1, 7).map((item) => {
+            const reached = totalMeters >= item.meters
             return (
-              <div key={m} className={`timeline-row ${reached ? 'reached' : ''}`}>
+              <div key={item.meters} className={`timeline-row ${reached ? 'reached' : ''}`}>
                 <div className="timeline-dot">{reached ? '✓' : '○'}</div>
                 <div className="timeline-copy">
-                  <strong>{distance(m)} 지점</strong>
+                  <strong>{item.icon} {item.name} · {distance(item.meters)}</strong>
                   <small>
                     {reached ? '지나온 작은 발걸음' : '다음 풍경을 향해'}
                   </small>
@@ -79,7 +82,7 @@ export default function Journey({
         </div>
 
         <div className="next-milestone">
-          다음 이정표까지 <b>{distance(Math.max(0, nextMilestone - totalMeters))}</b>
+          {stage.next ? <>다음 단계 ‘{stage.next.name}’까지 <b>{distance(Math.max(0, nextMilestone - totalMeters))}</b></> : <b>나만의 길을 계속 걷고 있어요 🌱</b>}
         </div>
       </section>
     </main>

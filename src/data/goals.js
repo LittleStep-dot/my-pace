@@ -170,7 +170,7 @@ export const GOAL_LIBRARY = [
 
 export const STARTER_GOALS = GOAL_LIBRARY.filter(goal => goal.starter)
 
-export const MONTHLY_SPECIALS = [
+export const SPECIAL_QUESTS = [
   { id:'s01', icon:'✨', title:'숨어있는 먼지 한 곳 닦기', description:'평소 손이 잘 가지 않는 곳 한 군데만 찾아 깨끗하게 닦아보세요.' },
   { id:'s02', icon:'🗑️', title:'안 쓰는 물건 5개 정리하기', description:'버리거나 나눌 물건 다섯 개만 골라보세요.' },
   { id:'s03', icon:'🚿', title:'욕실 한 곳 제대로 청소하기', description:'세면대, 거울, 샤워부스 중 한 곳이면 충분해요.' },
@@ -189,3 +189,6 @@ export const MONTHLY_SPECIALS = [
     id: `special-${goal.id}`,
   })),
 ]
+
+// Kept for older imports and stored data migrations.
+export const MONTHLY_SPECIALS = SPECIAL_QUESTS
