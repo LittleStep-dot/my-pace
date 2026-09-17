@@ -9,8 +9,9 @@ export default function Mascot({
     idle: '/art/char-idle.png',
     cheer: '/art/char-cheer.png',
     reward: '/art/char-reward.png',
-    journey: '/art/char-journey.png',
-    sleep: '/art/char-sleep.png',
+    journey: '/art/char_journey.png',
+    profile: '/art/char_profile.png',
+    sleep: '/art/char_sleep.png',
     think: '/art/char-think.png',
   }
 
