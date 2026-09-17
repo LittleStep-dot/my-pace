@@ -33,7 +33,7 @@ export default function Profile({
       <section className="profile-head"><h1>마이페이지</h1></section>
       <section className="screen-content">
         <div className="profile-identity">
-          <div className="profile-avatar"><Mascot mood="idle" size="md" /></div>
+          <div className="profile-avatar"><Mascot mood="profile" size="md" /></div>
           <div className="profile-copy">
             {editingName ? <form className="name-edit" onSubmit={(event) => { event.preventDefault(); saveName() }}><input autoFocus value={name} onChange={(event) => setName(event.target.value)} aria-label="이름 수정" /><button type="submit" aria-label="이름 저장">✓</button></form> : <h2>{profile.name}님</h2>}
             <p>나만의 속도로, 꾸준히 🌱</p>

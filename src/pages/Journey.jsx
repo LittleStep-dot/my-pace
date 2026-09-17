@@ -31,7 +31,7 @@ export default function Journey({
     <main className="screen journey-screen">
       <section className="journey-hero">
         <div className="journey-hero-top">
-          <img className="hero-logo" src={`${import.meta.env.BASE_URL}logo-final.svg`} alt="My Pace" />
+          <img className="hero-logo" src={`${import.meta.env.BASE_URL}art/logo_lockup.png`} alt="My Pace — Small Steps, Big Changes" />
         </div>
 
 

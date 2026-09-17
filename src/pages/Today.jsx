@@ -19,7 +19,7 @@ export default function Today({
   return (
     <main className="screen today-screen">
       <section className="today-hero">
-        <div className="hero-top"><img className="hero-logo" src={`${import.meta.env.BASE_URL}logo-final.svg`} alt="My Pace" /><div className="hero-actions"><button aria-label="알림">🔔</button></div></div>
+        <div className="hero-top"><img className="hero-logo" src={`${import.meta.env.BASE_URL}art/logo_lockup.png`} alt="My Pace — Small Steps, Big Changes" /><div className="hero-actions"><button aria-label="알림">🔔</button></div></div>
         <div className="hero-copy"><small>{greeting}</small><h1>{profile.name}님!</h1><p>오늘도, 당신의 속도로 💚</p></div>
       </section>
 
