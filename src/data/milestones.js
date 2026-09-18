@@ -1,4 +1,4 @@
-export const JOURNEY_MILESTONES = [
+const MILESTONES = [
   {
     id: 'first-20m',
     meters: 20,
@@ -101,6 +101,11 @@ export const JOURNEY_MILESTONES = [
     fact: '지금의 마라톤 공식 거리는 42.195km예요.',
   },
 ]
+
+export const JOURNEY_MILESTONES = MILESTONES.map((milestone) => ({
+  ...milestone,
+  type: milestone.category === 'special' ? 'achievement' : 'landmark',
+}))
 
 export const passedMilestones = (meters) => JOURNEY_MILESTONES.filter((item) => meters >= item.meters)
 export const nextMilestone = (meters) => JOURNEY_MILESTONES.find((item) => meters < item.meters) || null

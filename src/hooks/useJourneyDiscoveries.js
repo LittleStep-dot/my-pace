@@ -6,37 +6,36 @@ const STORAGE_KEY = 'myPaceV4Discoveries'
 function readDiscoveries() {
   try {
     const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-    return Array.isArray(value) ? value : []
-  } catch {
-    return []
-  }
+    if (!Array.isArray(value)) return []
+    return value.map((entry) => typeof entry === 'string'
+      ? { id: entry, discoveredAt: null, totalMeters: null }
+      : entry).filter((entry) => entry?.id)
+  } catch { return [] }
 }
 
 export default function useJourneyDiscoveries(totalMeters) {
-  const [discoveredIds, setDiscoveredIds] = useState(readDiscoveries)
+  const [discoveryRecords, setDiscoveryRecords] = useState(readDiscoveries)
   const [discovery, setDiscovery] = useState(null)
   const initialized = useRef(false)
   const previousMeters = useRef(totalMeters)
+  const discoveredIds = discoveryRecords.map((record) => record.id)
 
   useEffect(() => {
     const passed = passedMilestones(totalMeters)
     const known = new Set(discoveredIds)
     const newlyPassed = passed.filter((item) => !known.has(item.id))
-
     if (newlyPassed.length) {
-      const nextIds = [...new Set([...discoveredIds, ...newlyPassed.map((item) => item.id)])]
-      setDiscoveredIds(nextIds)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextIds))
-
-      if (initialized.current && totalMeters > previousMeters.current) {
-        setDiscovery(newlyPassed.at(-1))
-      }
+      const isNewSession = initialized.current && totalMeters > previousMeters.current
+      const records = newlyPassed.map((item) => ({ id: item.id, discoveredAt: isNewSession ? new Date().toISOString() : null, totalMeters: isNewSession ? totalMeters : null }))
+      const next = [...discoveryRecords, ...records]
+      setDiscoveryRecords(next)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      if (isNewSession) setDiscovery({ ...newlyPassed.at(-1), discoveryRecord: records.at(-1) })
     }
-
     initialized.current = true
     previousMeters.current = totalMeters
   }, [totalMeters])
 
-  const clearDiscoveries = () => { setDiscoveredIds([]); setDiscovery(null); previousMeters.current = 0 }
-  return { discoveredIds, discovery, dismissDiscovery: () => setDiscovery(null), clearDiscoveries }
+  const clearDiscoveries = () => { setDiscoveryRecords([]); setDiscovery(null); previousMeters.current = 0 }
+  return { discoveredIds, discoveryRecords, discovery, dismissDiscovery: () => setDiscovery(null), clearDiscoveries }
 }
