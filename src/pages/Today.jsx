@@ -1,6 +1,7 @@
 import Mascot from '../components/Mascot'
 import { iconFor } from '../App'
 import { distance, goalStreak, journeyStage } from '../lib/product'
+import { todayMascotState } from '../lib/todayMascot'
 
 export default function Today({
   profile, dailyGoals, todayState, completedCount, toggleDaily, weeklySpecial,
@@ -9,7 +10,7 @@ export default function Today({
   const greeting = now.getHours() < 12 ? '좋은 아침이에요,' : now.getHours() < 18 ? '좋은 오후예요,' : '좋은 저녁이에요,'
   const stage = journeyStage(totalMeters)
   const specialDone = Boolean(specialState.completedAt)
-  const mood = completedCount >= 3 ? 'today-success' : completedCount === 2 ? 'today-2' : completedCount === 1 ? 'today-1' : 'today-rest'
+  const mascotState = todayMascotState(completedCount, dailyGoals.length)
   const hour = now.getHours()
   const atmosphere = hour >= 5 && hour < 11 ? 'morning' : hour < 17 ? 'daytime' : hour < 21 ? 'evening' : 'night'
   const encouragement = completedCount >= 3
@@ -21,7 +22,7 @@ export default function Today({
   return (
     <main className="screen today-screen">
       <section className={`today-hero atmosphere-${atmosphere}`}>
-        <div className="hero-top"><span className="hero-logo-surface"><img className="hero-logo" src={`${import.meta.env.BASE_URL}art/logo_lockup.png`} alt="My Pace — Small Steps, Big Changes" /></span></div>
+        <div className="hero-top"><img className="hero-logo today-logo" src={`${import.meta.env.BASE_URL}art/logo_lockup.png`} alt="My Pace — Small Steps, Big Changes" /></div>
         <div className="hero-copy"><small>{greeting}</small><h1>{profile.name}님!</h1><p>오늘도, 당신의 속도로 💚</p></div>
       </section>
 
@@ -32,7 +33,7 @@ export default function Today({
         </div>
 
         <div className="today-status">
-          <Mascot mood={mood} size="sm" />
+          <Mascot mood={`today-${mascotState}`} size="sm" />
           <div><b>{encouragement}</b><small>오늘 {completedCount * 20 + (completedCount >= 3 ? 10 : 0)}m 걸었어요 · {completedCount} / {dailyGoals.length} 완료</small></div>
         </div>
 
