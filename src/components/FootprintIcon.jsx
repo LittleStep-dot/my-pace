@@ -1,1 +1,1 @@
-export default function FootprintIcon({ className = '' }) { return <svg className={`footprint-icon ${className}`} viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="11" cy="19" rx="4.4" ry="7.2" transform="rotate(-22 11 19)"/><ellipse cx="21" cy="13" rx="4.4" ry="7.2" transform="rotate(22 21 13)"/><circle cx="6.2" cy="10.6" r="1.8"/><circle cx="9.5" cy="7.8" r="1.55"/><circle cx="13" cy="6.8" r="1.35"/><circle cx="19" cy="5.2" r="1.35"/><circle cx="22.5" cy="5.9" r="1.55"/><circle cx="25.8" cy="8.6" r="1.8"/></svg> }
+export default function FootprintIcon() { return '👣' }
