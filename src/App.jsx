@@ -10,6 +10,7 @@ import Mascot from './components/Mascot'
 import { MILESTONES, buildCompletionRecords, dateKey, distance, journeyStage, weekKey } from './lib/product'
 import useJourneyDiscoveries from './hooks/useJourneyDiscoveries'
 import DiscoveryModal from './components/DiscoveryModal'
+import { discoveredMilestones } from './data/milestones'
 
 export { MILESTONES, distance, journeyStage }
 
@@ -201,7 +202,8 @@ export default function App() {
   }
 
   if (!profile || showOnboarding) return <Onboarding initialProfile={profile} onFinish={finishOnboarding} onCancel={profile ? () => setShowOnboarding(false) : null} />
-  const shared = { profile, dailyGoals, totalMeters, history, legacySpecial, weeklySpecials, completionLog, now, discoveredIds: discoveries.discoveredIds }
+  const actualDiscoveries = useMemo(() => discoveredMilestones(discoveries.discoveredIds), [discoveries.discoveredIds])
+  const shared = { profile, dailyGoals, totalMeters, history, legacySpecial, weeklySpecials, completionLog, now, discoveredIds: discoveries.discoveredIds, actualDiscoveries }
   return <div className="app app-shell"><div className="viewport">
     {tab === 'today' && <Today {...shared} todayState={todayState} completedCount={completedCount} weeklySpecial={weeklySpecial} specialState={specialState} toggleDaily={toggleDaily} toggleSpecial={toggleWeeklySpecial} changeSpecial={changeWeeklySpecial} />}
     {tab === 'journey' && <Journey {...shared} {...discoveries} />}

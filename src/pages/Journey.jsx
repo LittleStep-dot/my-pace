@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import Mascot from '../components/Mascot'
 import { addDays, dateKey, distance, startOfWeek } from '../lib/product'
-import { JOURNEY_MILESTONES, journeyScene, nextMilestone } from '../data/milestones'
+import { discoveredMilestones, JOURNEY_MILESTONES, journeyScene, nextMilestone } from '../data/milestones'
+import FootprintIcon from '../components/FootprintIcon'
 
 const dailyGoalCount = (meters) => Math.ceil(Math.max(0, meters) / 20)
 const formatDiscoveryDate = (value) => value ? new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(value)) : '업데이트 전 기록'
 
-export default function Journey({ totalMeters, history, legacySpecial, weeklySpecials, now, discoveredIds, discoveryRecords = [] }) {
+export default function Journey({ totalMeters, history, legacySpecial, weeklySpecials, now, discoveredIds, actualDiscoveries, discoveryRecords = [] }) {
   const [view, setView] = useState('main')
   const [selectedMilestone, setSelectedMilestone] = useState(null)
   const monday = startOfWeek(now)
@@ -18,7 +19,7 @@ export default function Journey({ totalMeters, history, legacySpecial, weeklySpe
   }).filter(Boolean).length
   const next = nextMilestone(totalMeters)
   const recordById = useMemo(() => new Map(discoveryRecords.map((record) => [record.id, record])), [discoveryRecords])
-  const discovered = JOURNEY_MILESTONES.filter((item) => discoveredIds.includes(item.id))
+  const discovered = actualDiscoveries || discoveredMilestones(discoveredIds)
   const scene = journeyScene(totalMeters)
   const previousThreshold = discovered.at(-1)?.meters || 0
   const progress = next ? Math.min(100, ((totalMeters - previousThreshold) / Math.max(1, next.meters - previousThreshold)) * 100) : 100

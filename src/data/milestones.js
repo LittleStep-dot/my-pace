@@ -3,5 +3,6 @@ const entries=[
 ]
 export const JOURNEY_MILESTONES=entries.map(([id,referenceDistanceMeters,title,icon,region,type,referenceMeaning,description,funFact,special=false,approximate=false,softEnding=false])=>({id,referenceDistanceMeters,unlockAtMeters:referenceDistanceMeters,title,name:title,icon,location:region,region,type,referenceMeaning,description,factLabel:type.includes('travel')?'🧳 여행 노트':'💡 알고 있었나요?',funFact,fact:funFact,myPaceLine:special?description:'',special,approximate,softEnding,meters:referenceDistanceMeters,category:special||type==='My Pace'||type==='achievement'?'special':'korea',discovery:description}))
 export const passedMilestones=meters=>JOURNEY_MILESTONES.filter(item=>meters>=item.unlockAtMeters)
+export const discoveredMilestones=ids=>JOURNEY_MILESTONES.filter(item=>ids.includes(item.id))
 export const nextMilestone=meters=>JOURNEY_MILESTONES.find(item=>meters<item.unlockAtMeters)||null
 export function journeyScene(m){if(m>=42195)return'world';if(m>=10000)return'coast';if(m>=5400)return'mountain';if(m>=1950)return'nature';if(m>=555)return'city';return'neighborhood'}
