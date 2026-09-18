@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { addDays, dateKey, dayReward, distance, fromDateKey, startOfWeek } from '../lib/product'
+import BackButton from './BackButton'
 
 const dayNames = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -49,7 +50,7 @@ export default function ReportPanel({ records, history, legacySpecial, weeklySpe
   return (
     <section className="profile-panel report-panel">
       <header className="panel-head">
-        <button type="button" onClick={onBack} aria-label="뒤로가기">‹</button>
+        <BackButton onClick={onBack} />
         <div><h1>통계 리포트</h1><p>내가 걸어온 작은 발걸음을 돌아봐요.</p></div>
       </header>
       <div className="report-tabs" role="tablist" aria-label="리포트 기간">

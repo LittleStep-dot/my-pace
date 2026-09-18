@@ -1,6 +1,8 @@
 import Mascot from '../components/Mascot'
 import { iconFor } from '../App'
 import { distance, goalStreak, journeyStage } from '../lib/product'
+import { todayMascotState } from '../lib/todayMascot'
+import { JOURNEY_MILESTONES, nextMilestone } from '../data/milestones'
 
 export default function Today({
   profile, dailyGoals, todayState, completedCount, toggleDaily, weeklySpecial,
@@ -8,8 +10,11 @@ export default function Today({
 }) {
   const greeting = now.getHours() < 12 ? '좋은 아침이에요,' : now.getHours() < 18 ? '좋은 오후예요,' : '좋은 저녁이에요,'
   const stage = journeyStage(totalMeters)
+  const nextDiscovery = nextMilestone(totalMeters)
+  const previousDiscovery = [...JOURNEY_MILESTONES].reverse().find((item) => item.unlockAtMeters <= totalMeters) || null
+  const discoveryProgress = nextDiscovery ? Math.min(100, Math.max(0, ((totalMeters - (previousDiscovery?.unlockAtMeters || 0)) / Math.max(1, nextDiscovery.unlockAtMeters - (previousDiscovery?.unlockAtMeters || 0))) * 100)) : 100
   const specialDone = Boolean(specialState.completedAt)
-  const mood = completedCount >= 3 ? 'today-success' : completedCount === 2 ? 'today-2' : completedCount === 1 ? 'today-1' : 'today-rest'
+  const mascotState = todayMascotState(completedCount, dailyGoals.length)
   const hour = now.getHours()
   const atmosphere = hour >= 5 && hour < 11 ? 'morning' : hour < 17 ? 'daytime' : hour < 21 ? 'evening' : 'night'
   const encouragement = completedCount >= 3
@@ -21,18 +26,18 @@ export default function Today({
   return (
     <main className="screen today-screen">
       <section className={`today-hero atmosphere-${atmosphere}`}>
-        <div className="hero-top"><img className="hero-logo" src={`${import.meta.env.BASE_URL}art/logo_lockup.png`} alt="My Pace — Small Steps, Big Changes" /><div className="hero-actions"><button aria-label="알림">🔔</button></div></div>
+        <div className="hero-top"><img className="hero-logo today-logo" src={`${import.meta.env.BASE_URL}art/logo_lockup.png`} alt="My Pace — Small Steps, Big Changes" /></div>
         <div className="hero-copy"><small>{greeting}</small><h1>{profile.name}님!</h1><p>오늘도, 당신의 속도로 💚</p></div>
       </section>
 
       <section className="screen-content">
         <div className="stats-row">
           <div className="stat-card"><span>🌱 여정 거리</span><b>{distance(totalMeters)}</b><div className="stat-bar"><div style={{ width: `${stage.progress}%` }} /></div></div>
-          <div className="stat-card"><span>{stage.current.icon} 현재 여정 단계</span><b className="stage-name">{stage.current.name}</b><div className="stat-bar yellow"><div style={{ width: `${stage.progress}%` }} /></div></div>
+          <div className="stat-card"><span>📍 다음 발견</span><b className="stage-name">{nextDiscovery ? `${distance(nextDiscovery.unlockAtMeters - totalMeters)} 남음` : '여정은 계속됩니다'}</b><div className="stat-bar yellow"><div style={{ width: `${discoveryProgress}%` }} /></div></div>
         </div>
 
         <div className="today-status">
-          <Mascot mood={mood} size="sm" />
+          <Mascot mood={`today-${mascotState}`} size="sm" />
           <div><b>{encouragement}</b><small>오늘 {completedCount * 20 + (completedCount >= 3 ? 10 : 0)}m 걸었어요 · {completedCount} / {dailyGoals.length} 완료</small></div>
         </div>
 

@@ -1,3 +1,5 @@
+import { TODAY_MASCOT_STATES } from '../lib/todayMascot'
+
 export default function Mascot({
   mood = 'idle',
   size = 'md',
@@ -15,6 +17,11 @@ export default function Mascot({
     profile: '/art/char-profile.png',
     sleep: '/art/char-sleep.png',
     special: '/art/char-special.png',
+    'today-thinking': `/art/${TODAY_MASCOT_STATES.thinking.asset}`,
+    'today-start': `/art/${TODAY_MASCOT_STATES.start.asset}`,
+    'today-cheer': `/art/${TODAY_MASCOT_STATES.cheer.asset}`,
+    'today-star': `/art/${TODAY_MASCOT_STATES.star.asset}`,
+    'today-heart': `/art/${TODAY_MASCOT_STATES.heart.asset}`,
   }
 
   const sizeClass =

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import BackButton from './BackButton'
 
 export default function ReminderSettings({ reminders, setReminders, onBack }) {
   const [permission, setPermission] = useState(() => typeof Notification === 'undefined' ? 'unsupported' : Notification.permission)
@@ -10,7 +11,7 @@ export default function ReminderSettings({ reminders, setReminders, onBack }) {
   return (
     <section className="profile-panel reminder-panel">
       <header className="panel-head">
-        <button type="button" onClick={onBack} aria-label="뒤로가기">‹</button>
+        <BackButton onClick={onBack} />
         <div><h1>리마인더 설정</h1><p>필요한 순간에만 가볍게 알려드려요.</p></div>
       </header>
 

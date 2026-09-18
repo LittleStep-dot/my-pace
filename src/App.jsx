@@ -8,6 +8,8 @@ import Profile from './pages/Profile'
 import BottomNav from './components/BottomNav'
 import Mascot from './components/Mascot'
 import { MILESTONES, buildCompletionRecords, dateKey, distance, journeyStage, weekKey } from './lib/product'
+import useJourneyDiscoveries from './hooks/useJourneyDiscoveries'
+import DiscoveryModal from './components/DiscoveryModal'
 
 export { MILESTONES, distance, journeyStage }
 
@@ -15,6 +17,7 @@ const STORAGE = {
   profile: 'myPaceV2Profile', history: 'myPaceV2History', weekly: 'myPaceV2Weekly', monthly: 'myPaceV2Monthly',
   special: 'myPaceV2Special', theme: 'myPaceV2Theme', completionLog: 'myPaceV3CompletionLog',
   weeklySpecials: 'myPaceV3WeeklySpecials', reminders: 'myPaceV3Reminders',
+  discoveries: 'myPaceV4Discoveries',
 }
 const DEFAULT_REMINDERS = { daily: { enabled: false, time: '20:00' }, evening: { enabled: false, time: '22:00' } }
 const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) : fallback } catch { return fallback } }
@@ -52,11 +55,33 @@ export default function App() {
   })
   const [theme, setTheme] = useState(() => localStorage.getItem(STORAGE.theme) || 'auto')
   const [tab, setTab] = useState('today')
+  const [profileView, setProfileView] = useState('main')
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [feedback, setFeedback] = useState(null)
   const notificationRef = useRef(new Set())
 
+  const navigate = (nextTab, nextProfileView = 'main', { replace = false } = {}) => {
+    const state = { myPace: true, tab: nextTab, profileView: nextProfileView }
+    if (replace) window.history.replaceState(state, '')
+    else window.history.pushState(state, '')
+    setTab(nextTab)
+    setProfileView(nextProfileView)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
+
   useEffect(() => { const id = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(id) }, [])
+  useEffect(() => {
+    window.history.replaceState({ myPace: true, tab: 'today', profileView: 'main' }, '')
+    const onPopState = (event) => {
+      const state = event.state
+      if (!state?.myPace) return
+      setTab(state.tab || 'today')
+      setProfileView(state.profileView || 'main')
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
   useEffect(() => {
     const media = matchMedia('(prefers-color-scheme: dark)')
     const apply = () => { document.documentElement.dataset.theme = theme === 'auto' ? (media.matches ? 'dark' : 'light') : theme }
@@ -100,6 +125,7 @@ export default function App() {
     meters += Object.values(weeklySpecials).filter((state) => state?.completedAt && !state.legacyReward).length * 50
     return meters
   }, [history, weekly, monthly, legacySpecial, weeklySpecials])
+  const discoveries = useJourneyDiscoveries(totalMeters)
 
   const today = dateKey(now)
   const dailyGoals = (profile?.dailyGoalIds || []).map(findGoal).filter(Boolean)
@@ -170,16 +196,17 @@ export default function App() {
   const resetAll = () => {
     if (!window.confirm('모든 기록과 설정을 삭제할까요?\n이 작업은 되돌릴 수 없어요.')) return
     Object.values(STORAGE).forEach((key) => localStorage.removeItem(key))
-    setProfile(null); setHistory({}); setWeekly({}); setMonthly({}); setLegacySpecial({}); setWeeklySpecials({}); setCompletionLog([]); setReminders(DEFAULT_REMINDERS); setTheme('auto'); setTab('today')
+    discoveries.clearDiscoveries()
+    setProfile(null); setHistory({}); setWeekly({}); setMonthly({}); setLegacySpecial({}); setWeeklySpecials({}); setCompletionLog([]); setReminders(DEFAULT_REMINDERS); setTheme('auto'); navigate('today', 'main', { replace: true })
   }
 
   if (!profile || showOnboarding) return <Onboarding initialProfile={profile} onFinish={finishOnboarding} onCancel={profile ? () => setShowOnboarding(false) : null} />
-  const shared = { profile, dailyGoals, totalMeters, history, legacySpecial, weeklySpecials, completionLog, now }
+  const shared = { profile, dailyGoals, totalMeters, history, legacySpecial, weeklySpecials, completionLog, now, discoveredIds: discoveries.discoveredIds }
   return <div className="app app-shell"><div className="viewport">
     {tab === 'today' && <Today {...shared} todayState={todayState} completedCount={completedCount} weeklySpecial={weeklySpecial} specialState={specialState} toggleDaily={toggleDaily} toggleSpecial={toggleWeeklySpecial} changeSpecial={changeWeeklySpecial} />}
-    {tab === 'journey' && <Journey {...shared} />}
-    {tab === 'profile' && <Profile {...shared} theme={theme} setTheme={setTheme} setProfile={setProfile} reminders={reminders} setReminders={setReminders} restartOnboarding={() => setShowOnboarding(true)} resetAll={resetAll} />}
-  </div>{feedback && <div className={`gain ${feedback.detail ? 'gain-detail' : ''}`}><b>+{feedback.meters}m 🌱</b>{feedback.title && <strong>{feedback.title}</strong>}{feedback.detail && <span>{feedback.detail}</span>}</div>}<BottomNav tab={tab} setTab={setTab} /></div>
+    {tab === 'journey' && <Journey {...shared} {...discoveries} />}
+    {tab === 'profile' && <Profile {...shared} view={profileView} setView={(view) => navigate('profile', view)} theme={theme} setTheme={setTheme} setProfile={setProfile} reminders={reminders} setReminders={setReminders} restartOnboarding={() => setShowOnboarding(true)} resetAll={resetAll} />}
+  </div>{feedback && <div className={`gain ${feedback.detail ? 'gain-detail' : ''}`}><b>+{feedback.meters}m 🌱</b>{feedback.title && <strong>{feedback.title}</strong>}{feedback.detail && <span>{feedback.detail}</span>}</div>}<DiscoveryModal discovery={discoveries.discovery} onClose={discoveries.dismissDiscovery} onOpenJourney={() => navigate('journey')} /><BottomNav tab={tab} setTab={(next) => navigate(next)} /></div>
 }
 
 function Onboarding({ initialProfile, onFinish, onCancel }) {

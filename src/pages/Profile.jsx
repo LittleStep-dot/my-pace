@@ -1,39 +1,68 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import GoalManager from '../components/GoalManager'
 import Mascot from '../components/Mascot'
 import ReportPanel from '../components/ReportPanel'
 import ReminderSettings from '../components/ReminderSettings'
 import DataManager from '../components/DataManager'
 import { distance, inclusiveDaysSince, journeyStage } from '../lib/product'
+import { AVATAR_OPTIONS, isAvatarSelection, profileAvatarSrc } from '../lib/profileAvatar'
+import BackButton from '../components/BackButton'
 
 export default function Profile({
   profile, totalMeters, theme, setTheme, setProfile, history, legacySpecial,
-  weeklySpecials, completionLog, now, reminders, setReminders, restartOnboarding, resetAll,
+  weeklySpecials, completionLog, now, reminders, setReminders, restartOnboarding, resetAll, view, setView, discoveredIds = [],
 }) {
-  const [view, setView] = useState('main')
   const [editingName, setEditingName] = useState(false)
   const [name, setName] = useState(profile.name)
+  const [photoError, setPhotoError] = useState('')
+  const photoInput = useRef(null)
   const stage = journeyStage(totalMeters)
   const togetherDays = inclusiveDaysSince(profile.journeyStartedAt, now)
-  const back = () => setView('main')
+  const back = () => window.history.back()
   const saveName = () => {
     const next = name.trim()
     if (!next) return
     setProfile({ ...profile, name: next })
     setEditingName(false)
   }
+  const choosePhoto = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) { setPhotoError('이미지 파일을 선택해주세요.'); return }
+    try {
+      const bitmap = await createImageBitmap(file)
+      const size = Math.min(bitmap.width, bitmap.height)
+      const canvas = document.createElement('canvas')
+      canvas.width = 512; canvas.height = 512
+      const context = canvas.getContext('2d')
+      context.drawImage(bitmap, (bitmap.width - size) / 2, (bitmap.height - size) / 2, size, size, 0, 0, 512, 512)
+      bitmap.close?.()
+      setProfile({ ...profile, avatar: { type: 'photo', value: canvas.toDataURL('image/jpeg', 0.82) } })
+      setPhotoError('')
+      window.history.back()
+    } catch {
+      setPhotoError('사진을 불러오지 못했어요. 다른 사진을 선택해주세요.')
+    }
+  }
+  const chooseAvatar = (id) => {
+    setProfile({ ...profile, avatar: { type: 'avatar', id } })
+    setPhotoError('')
+    window.history.back()
+  }
 
   if (view === 'goals') return <main className="screen profile-screen"><GoalManager profile={profile} save={(next) => { setProfile(next); back() }} cancel={back} /></main>
   if (view === 'report') return <main className="screen profile-screen"><ReportPanel records={completionLog} history={history} legacySpecial={legacySpecial} weeklySpecials={weeklySpecials} now={now} onBack={back} /></main>
   if (view === 'reminders') return <main className="screen profile-screen"><ReminderSettings reminders={reminders} setReminders={setReminders} onBack={back} /></main>
   if (view === 'data') return <main className="screen profile-screen"><DataManager onBack={back} onGoals={() => setView('goals')} onOnboarding={restartOnboarding} onResetAll={resetAll} /></main>
+  if (view === 'avatar') return <main className="screen profile-screen"><section className="profile-head sub-head"><BackButton onClick={back} /><h1>프로필 사진</h1></section><section className="screen-content avatar-settings"><div className="avatar-preview"><img src={profileAvatarSrc(profile.avatar)} alt="현재 프로필" /></div><h2>나를 보여주는 사진을 골라보세요</h2><p>기본 아바타 또는 내 사진을 고를 수 있어요.</p><div className="avatar-grid" aria-label="기본 아바타 선택">{AVATAR_OPTIONS.map((avatar) => { const selected = isAvatarSelection(profile.avatar) && profile.avatar.id === avatar.id; return <button key={avatar.id} className={`avatar-option ${selected ? 'selected' : ''}`} aria-label={avatar.label} aria-pressed={selected} onClick={() => chooseAvatar(avatar.id)}><img src={`${import.meta.env.BASE_URL}art/${avatar.id}.png`} alt="" />{selected && <span aria-hidden="true">✓</span>}</button> })}</div><button className="avatar-choice" onClick={() => photoInput.current?.click()}><span>🖼️</span><b>휴대폰 사진에서 선택</b></button><input ref={photoInput} hidden type="file" accept="image/*" onChange={choosePhoto} />{photoError && <p className="avatar-error">{photoError}</p>}</section></main>
 
   return (
     <main className="screen profile-screen">
       <section className="profile-head"><h1>마이페이지</h1></section>
       <section className="screen-content">
         <div className="profile-identity">
-          <div className="profile-avatar"><img src={`${import.meta.env.BASE_URL}art/avatar-profile.png`} alt="" /></div>
+          <button className="profile-avatar" onClick={() => setView('avatar')} aria-label="프로필 사진 변경"><img src={profileAvatarSrc(profile.avatar)} alt="" /><span>✎</span></button>
           <div className="profile-copy">
             {editingName ? <form className="name-edit" onSubmit={(event) => { event.preventDefault(); saveName() }}><input autoFocus value={name} onChange={(event) => setName(event.target.value)} aria-label="이름 수정" /><button type="submit" aria-label="이름 저장">✓</button></form> : <h2>{profile.name}님</h2>}
             <p>나만의 속도로, 꾸준히 🌱</p>
@@ -42,7 +71,7 @@ export default function Profile({
         </div>
 
         <div className="profile-stats">
-          <div><span>{stage.current.icon}</span><b className="profile-stage-name">{stage.current.name}</b><small>현재 단계</small></div>
+          <div><span>👣</span><b className="profile-stage-name">{discoveredIds.length}곳</b><small>발견한 발자취</small></div>
           <div><span>🌱</span><b className="journey-distance-stat">{distance(totalMeters)}</b><small>지금까지의 여정</small></div>
           <div><span>🗓️</span><b>{togetherDays}일</b><small>함께한 날</small></div>
         </div>
