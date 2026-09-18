@@ -6,6 +6,7 @@ import ReminderSettings from '../components/ReminderSettings'
 import DataManager from '../components/DataManager'
 import { distance, inclusiveDaysSince, journeyStage } from '../lib/product'
 import { AVATAR_OPTIONS, isAvatarSelection, profileAvatarSrc } from '../lib/profileAvatar'
+import BackButton from '../components/BackButton'
 
 export default function Profile({
   profile, totalMeters, theme, setTheme, setProfile, history, legacySpecial,
@@ -47,13 +48,14 @@ export default function Profile({
   const chooseAvatar = (id) => {
     setProfile({ ...profile, avatar: { type: 'avatar', id } })
     setPhotoError('')
+    window.history.back()
   }
 
   if (view === 'goals') return <main className="screen profile-screen"><GoalManager profile={profile} save={(next) => { setProfile(next); back() }} cancel={back} /></main>
   if (view === 'report') return <main className="screen profile-screen"><ReportPanel records={completionLog} history={history} legacySpecial={legacySpecial} weeklySpecials={weeklySpecials} now={now} onBack={back} /></main>
   if (view === 'reminders') return <main className="screen profile-screen"><ReminderSettings reminders={reminders} setReminders={setReminders} onBack={back} /></main>
   if (view === 'data') return <main className="screen profile-screen"><DataManager onBack={back} onGoals={() => setView('goals')} onOnboarding={restartOnboarding} onResetAll={resetAll} /></main>
-  if (view === 'avatar') return <main className="screen profile-screen"><section className="profile-head sub-head"><button onClick={back} aria-label="뒤로가기">‹</button><h1>프로필 사진</h1></section><section className="screen-content avatar-settings"><div className="avatar-preview"><img src={profileAvatarSrc(profile.avatar)} alt="현재 프로필" /></div><h2>나를 보여주는 사진을 골라보세요</h2><p>기본 아바타 또는 내 사진을 고를 수 있어요.</p><div className="avatar-grid" aria-label="기본 아바타 선택">{AVATAR_OPTIONS.map((avatar) => { const selected = isAvatarSelection(profile.avatar) && profile.avatar.id === avatar.id; return <button key={avatar.id} className={`avatar-option ${selected ? 'selected' : ''}`} aria-label={avatar.label} aria-pressed={selected} onClick={() => chooseAvatar(avatar.id)}><img src={`${import.meta.env.BASE_URL}art/${avatar.id}.png`} alt="" />{selected && <span aria-hidden="true">✓</span>}</button> })}</div><button className={`avatar-choice ${profile.avatar?.type === 'default' || !profile.avatar ? 'selected-choice' : ''}`} onClick={() => { setProfile({ ...profile, avatar: { type: 'default' } }); setPhotoError('') }}><span>🌱</span><b>기존 기본 이미지 사용</b></button><button className="avatar-choice" onClick={() => photoInput.current?.click()}><span>🖼️</span><b>휴대폰 사진에서 선택</b></button><input ref={photoInput} hidden type="file" accept="image/*" onChange={choosePhoto} />{photoError && <p className="avatar-error">{photoError}</p>}</section></main>
+  if (view === 'avatar') return <main className="screen profile-screen"><section className="profile-head sub-head"><BackButton onClick={back} /><h1>프로필 사진</h1></section><section className="screen-content avatar-settings"><div className="avatar-preview"><img src={profileAvatarSrc(profile.avatar)} alt="현재 프로필" /></div><h2>나를 보여주는 사진을 골라보세요</h2><p>기본 아바타 또는 내 사진을 고를 수 있어요.</p><div className="avatar-grid" aria-label="기본 아바타 선택">{AVATAR_OPTIONS.map((avatar) => { const selected = isAvatarSelection(profile.avatar) && profile.avatar.id === avatar.id; return <button key={avatar.id} className={`avatar-option ${selected ? 'selected' : ''}`} aria-label={avatar.label} aria-pressed={selected} onClick={() => chooseAvatar(avatar.id)}><img src={`${import.meta.env.BASE_URL}art/${avatar.id}.png`} alt="" />{selected && <span aria-hidden="true">✓</span>}</button> })}</div><button className="avatar-choice" onClick={() => photoInput.current?.click()}><span>🖼️</span><b>휴대폰 사진에서 선택</b></button><input ref={photoInput} hidden type="file" accept="image/*" onChange={choosePhoto} />{photoError && <p className="avatar-error">{photoError}</p>}</section></main>
 
   return (
     <main className="screen profile-screen">

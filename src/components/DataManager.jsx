@@ -2,7 +2,7 @@ export default function DataManager({ onBack, onGoals, onOnboarding, onResetAll 
   return (
     <section className="profile-panel data-panel">
       <header className="panel-head">
-        <button type="button" onClick={onBack} aria-label="뒤로가기">‹</button>
+        <BackButton onClick={onBack} />
         <div><h1>데이터 관리</h1><p>기록은 보존하고, 필요한 설정만 다시 다듬을 수 있어요.</p></div>
       </header>
       <div className="data-card">
@@ -13,3 +13,4 @@ export default function DataManager({ onBack, onGoals, onOnboarding, onResetAll 
     </section>
   )
 }
+import BackButton from './BackButton'

@@ -1,0 +1,1 @@
+export default function BackButton({ onClick, label = '뒤로가기' }) { return <button type="button" className="icon-back profile-back" onClick={onClick} aria-label={label}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7" /></svg></button> }
