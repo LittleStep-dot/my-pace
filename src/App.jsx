@@ -201,7 +201,7 @@ export default function App() {
   }
 
   if (!profile || showOnboarding) return <Onboarding initialProfile={profile} onFinish={finishOnboarding} onCancel={profile ? () => setShowOnboarding(false) : null} />
-  const shared = { profile, dailyGoals, totalMeters, history, legacySpecial, weeklySpecials, completionLog, now }
+  const shared = { profile, dailyGoals, totalMeters, history, legacySpecial, weeklySpecials, completionLog, now, discoveredIds: discoveries.discoveredIds }
   return <div className="app app-shell"><div className="viewport">
     {tab === 'today' && <Today {...shared} todayState={todayState} completedCount={completedCount} weeklySpecial={weeklySpecial} specialState={specialState} toggleDaily={toggleDaily} toggleSpecial={toggleWeeklySpecial} changeSpecial={changeWeeklySpecial} />}
     {tab === 'journey' && <Journey {...shared} {...discoveries} />}

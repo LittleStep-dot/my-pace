@@ -2,6 +2,7 @@ import Mascot from '../components/Mascot'
 import { iconFor } from '../App'
 import { distance, goalStreak, journeyStage } from '../lib/product'
 import { todayMascotState } from '../lib/todayMascot'
+import { JOURNEY_MILESTONES, nextMilestone } from '../data/milestones'
 
 export default function Today({
   profile, dailyGoals, todayState, completedCount, toggleDaily, weeklySpecial,
@@ -9,6 +10,9 @@ export default function Today({
 }) {
   const greeting = now.getHours() < 12 ? '좋은 아침이에요,' : now.getHours() < 18 ? '좋은 오후예요,' : '좋은 저녁이에요,'
   const stage = journeyStage(totalMeters)
+  const nextDiscovery = nextMilestone(totalMeters)
+  const previousDiscovery = [...JOURNEY_MILESTONES].reverse().find((item) => item.unlockAtMeters <= totalMeters) || null
+  const discoveryProgress = nextDiscovery ? Math.min(100, Math.max(0, ((totalMeters - (previousDiscovery?.unlockAtMeters || 0)) / Math.max(1, nextDiscovery.unlockAtMeters - (previousDiscovery?.unlockAtMeters || 0))) * 100)) : 100
   const specialDone = Boolean(specialState.completedAt)
   const mascotState = todayMascotState(completedCount, dailyGoals.length)
   const hour = now.getHours()
@@ -29,7 +33,7 @@ export default function Today({
       <section className="screen-content">
         <div className="stats-row">
           <div className="stat-card"><span>🌱 여정 거리</span><b>{distance(totalMeters)}</b><div className="stat-bar"><div style={{ width: `${stage.progress}%` }} /></div></div>
-          <div className="stat-card"><span>{stage.current.icon} 현재 여정 단계</span><b className="stage-name">{stage.current.name}</b><div className="stat-bar yellow"><div style={{ width: `${stage.progress}%` }} /></div></div>
+          <div className="stat-card"><span>📍 다음 발견</span><b className="stage-name">{nextDiscovery ? `${distance(nextDiscovery.unlockAtMeters - totalMeters)} 남음` : '여정은 계속됩니다'}</b><div className="stat-bar yellow"><div style={{ width: `${discoveryProgress}%` }} /></div></div>
         </div>
 
         <div className="today-status">

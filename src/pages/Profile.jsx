@@ -10,7 +10,7 @@ import BackButton from '../components/BackButton'
 
 export default function Profile({
   profile, totalMeters, theme, setTheme, setProfile, history, legacySpecial,
-  weeklySpecials, completionLog, now, reminders, setReminders, restartOnboarding, resetAll, view, setView,
+  weeklySpecials, completionLog, now, reminders, setReminders, restartOnboarding, resetAll, view, setView, discoveredIds = [],
 }) {
   const [editingName, setEditingName] = useState(false)
   const [name, setName] = useState(profile.name)
@@ -71,7 +71,7 @@ export default function Profile({
         </div>
 
         <div className="profile-stats">
-          <div><span>{stage.current.icon}</span><b className="profile-stage-name">{stage.current.name}</b><small>현재 단계</small></div>
+          <div><span>👣</span><b className="profile-stage-name">{discoveredIds.length}곳</b><small>발견한 발자취</small></div>
           <div><span>🌱</span><b className="journey-distance-stat">{distance(totalMeters)}</b><small>지금까지의 여정</small></div>
           <div><span>🗓️</span><b>{togetherDays}일</b><small>함께한 날</small></div>
         </div>
