@@ -47,8 +47,26 @@ const collectionArt = {
   dokdo: 'collection-045-dokdo.png',
 }
 
+// Presentation-only normalization: transparent canvases vary by Collection,
+// while distance and discovery data remain entirely in milestonesV2.
+const displayScale = {
+  'first-step': 1.18, 'statue-liberty': 1.14, hyperion: 1.26, seongsan: 1.14,
+  titanic: 1.2, eiffel: 1.22, track: 1.1, lotte: 1.2, 'tokyo-skytree': 1.2,
+  'burj-khalifa': 1.2, baegundae: 1.14, 'first-1km': 1.24,
+  'sydney-harbour': 1.18, 'meteor-crater': 1.16, haeundae: 1.16,
+  seoraksan: 1.15, hallasan: 1.15, seokchon: 1.14, 'golden-gate': 1.18,
+  'jeongdong-simgok': 1.16, 'monaco-f1': 1.17, 'marina-bay': 1.14,
+  gyeongpo: 1.14, 'first-5km': 1.24, hwaseong: 1.15, gwanggyo: 1.14,
+  manjanggul: 1.16, everest: 1.15, 'first-10km': 1.24,
+  'challenger-deep': 1.15, saryeoni: 1.18, 'grand-canyon': 1.16,
+  hanyang: 1.16, half: 1.24, incheon: 1.18, 'yeosu-goheung': 1.18,
+  'perito-moreno': 1.15, saemangeum: 1.18, marathon: 1.24,
+  'marado-lighthouse': 1.17, yulhyeon: 1.17, 'bukhangang-cycle': 1.18,
+  'panama-canal': 1.18, dokdo: 1.16,
+}
+
 export default function MilestoneIcon({ milestone }) {
   const asset = collectionArt[milestone.id]
-  if (asset) return <img className="collection-art" src={`${import.meta.env.BASE_URL}art/collections/${asset}`} alt="" />
+  if (asset) return <span className="collection-art-frame" style={{ '--collection-art-scale': displayScale[milestone.id] || 1.16 }}><img className="collection-art" src={`${import.meta.env.BASE_URL}art/collections/${asset}`} alt="" /></span>
   return milestone.id === 'first-step' ? <FootprintIcon /> : milestone.icon
 }
