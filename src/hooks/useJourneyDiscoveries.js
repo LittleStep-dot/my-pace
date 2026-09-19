@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { passedMilestones } from '../data/milestones'
+import { passedMilestones } from '../data/milestonesV2'
 
 const STORAGE_KEY = 'myPaceV4Discoveries'
 

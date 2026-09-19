@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react'
 import Mascot from '../components/Mascot'
 import MilestoneIcon from '../components/MilestoneIcon'
 import { addDays,dateKey,distance,startOfWeek } from '../lib/product'
-import { discoveredMilestones,JOURNEY_MILESTONES,journeyScene,nextMilestone } from '../data/milestones'
-const dailyGoalCount=m=>Math.ceil(Math.max(0,m)/20)
+import { discoveredMilestones,JOURNEY_MILESTONES,journeyScene,nextMilestone } from '../data/milestonesV2'
+const dailyGoalCount=(meters,pace=20)=>Math.ceil(Math.max(0,meters)/pace)
 const formatDate=v=>v?new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'long',day:'numeric'}).format(new Date(v)):'업데이트 전 기록'
-export default function Journey({totalMeters,history,legacySpecial,weeklySpecials,now,discoveredIds,actualDiscoveries,discoveryRecords=[]}){
+export default function Journey({totalMeters,currentPace,history,legacySpecial,weeklySpecials,now,discoveredIds,actualDiscoveries,discoveryRecords=[]}){
  const [view,setView]=useState('main'),[selected,setSelected]=useState(null);const monday=startOfWeek(now),week=dateKey(monday),weeklyDate=weeklySpecials[week]?.completedAt?dateKey(new Date(weeklySpecials[week].completedAt)):null
+ const dailyGoalCount=(meters)=>Math.ceil(Math.max(0,meters)/(currentPace||20))
  const activeDays=Array.from({length:7},(_,i)=>{const k=dateKey(addDays(monday,i));return Object.values(history[k]||{}).some(v=>v==='done')||legacySpecial[k]==='done'||weeklyDate===k}).filter(Boolean).length
  const next=nextMilestone(totalMeters),records=useMemo(()=>new Map(discoveryRecords.map(r=>[r.id,r])),[discoveryRecords]),discovered=actualDiscoveries||discoveredMilestones(discoveredIds),previous=discovered.at(-1)?.meters||0,progress=next?Math.min(100,((totalMeters-previous)/Math.max(1,next.meters-previous))*100):100
  if(view==='detail'&&selected){const r=records.get(selected.id);return <main className="screen journey-screen milestone-detail-screen"><section className="collection-head detail-head"><button className="icon-back" onClick={()=>setView('collection')} aria-label="나의 발자취로 돌아가기"><svg viewBox="0 0 24 24"><path d="m14.5 5-7 7 7 7"/></svg></button><div><small>{selected.type==='achievement'?'PERSONAL MILESTONE':'JOURNEY LANDMARK'}</small><h1>{selected.name}</h1><p>{selected.region}</p></div></section><section className="screen-content milestone-detail"><span className="detail-icon"><MilestoneIcon milestone={selected}/></span><strong>{distance(selected.meters)}</strong><p className="detail-description">{selected.description}</p><article><small>발견한 순간</small><b>{r?.totalMeters?distance(r.totalMeters):distance(selected.meters)}</b><p>{formatDate(r?.discoveredAt)}</p></article><article><small>Daily Goal로 환산하면</small><b>약 {dailyGoalCount(selected.meters)}개</b><p>Daily Goal 1회 = 20m 기준의 단순 환산이에요.</p></article><aside><b>💡 잠깐 상식</b><p>{selected.fact}</p></aside></section></main>}

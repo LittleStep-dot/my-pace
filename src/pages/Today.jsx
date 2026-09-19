@@ -2,11 +2,11 @@ import Mascot from '../components/Mascot'
 import { iconFor } from '../App'
 import { distance, goalStreak, journeyStage } from '../lib/product'
 import { todayMascotState } from '../lib/todayMascot'
-import { JOURNEY_MILESTONES, nextMilestone } from '../data/milestones'
+import { JOURNEY_MILESTONES, nextMilestone } from '../data/milestonesV2'
 
 export default function Today({
   profile, dailyGoals, todayState, completedCount, toggleDaily, weeklySpecial,
-  specialState, toggleSpecial, changeSpecial, now, totalMeters, history,
+  specialState, toggleSpecial, changeSpecial, now, totalMeters, currentPace, history,
 }) {
   const greeting = now.getHours() < 12 ? '좋은 아침이에요,' : now.getHours() < 18 ? '좋은 오후예요,' : '좋은 저녁이에요,'
   const stage = journeyStage(totalMeters)
@@ -38,7 +38,7 @@ export default function Today({
 
         <div className="today-status">
           <Mascot mood={`today-${mascotState}`} size="sm" />
-          <div><b>{encouragement}</b><small>오늘 {completedCount * 20 + (completedCount >= 3 ? 10 : 0)}m 걸었어요 · {completedCount} / {dailyGoals.length} 완료</small></div>
+          <div><b>{encouragement}</b><small>현재 Pace {currentPace}m / Goal · {completedCount} / {dailyGoals.length} 완료</small></div>
         </div>
 
         <div className="section-head"><h2>오늘의 목표</h2><span>{completedCount} / {dailyGoals.length} 완료</span></div>
@@ -48,7 +48,7 @@ export default function Today({
             const streak = goalStreak(history, goal.id, now)
             return <button key={goal.id} className={`goal-row ${done ? 'done' : ''}`} aria-pressed={done} onClick={() => toggleDaily(goal.id)}>
               <div className="goal-check">{done ? '✓' : ''}</div><div className="goal-emoji">{iconFor(goal)}</div>
-              <div className="goal-copy"><div className="goal-title"><strong>{goal.title}</strong>{streak >= 2 && <span className="streak-badge">🌱 {streak}일째</span>}</div><small>{goal.description} · <em className="goal-reward">+20m</em></small></div><div className="goal-arrow">›</div>
+              <div className="goal-copy"><div className="goal-title"><strong>{goal.title}</strong>{streak >= 2 && <span className="streak-badge">🌱 {streak}일째</span>}</div><small>{goal.description} · <em className="goal-reward">+{currentPace}m</em></small></div><div className="goal-arrow">›</div>
             </button>
           })}
           {dailyGoals.length === 0 && <div className="empty-goals">지금은 선택한 Daily Goal이 없어요.<br />프로필에서 작은 목표를 추가할 수 있어요.</div>}

@@ -10,7 +10,8 @@ import Mascot from './components/Mascot'
 import { MILESTONES, buildCompletionRecords, dateKey, distance, journeyStage, weekKey } from './lib/product'
 import useJourneyDiscoveries from './hooks/useJourneyDiscoveries'
 import DiscoveryModal from './components/DiscoveryModal'
-import { discoveredMilestones } from './data/milestones'
+import { discoveredMilestones } from './data/milestonesV2'
+import { dailyRewardForCount, paceForMeters } from './lib/pace'
 
 export { MILESTONES, distance, journeyStage }
 
@@ -18,7 +19,7 @@ const STORAGE = {
   profile: 'myPaceV2Profile', history: 'myPaceV2History', weekly: 'myPaceV2Weekly', monthly: 'myPaceV2Monthly',
   special: 'myPaceV2Special', theme: 'myPaceV2Theme', completionLog: 'myPaceV3CompletionLog',
   weeklySpecials: 'myPaceV3WeeklySpecials', reminders: 'myPaceV3Reminders',
-  discoveries: 'myPaceV4Discoveries',
+  discoveries: 'myPaceV4Discoveries', journeyMeters: 'myPaceV5JourneyMeters',
 }
 const DEFAULT_REMINDERS = { daily: { enabled: false, time: '20:00' }, evening: { enabled: false, time: '22:00' } }
 const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) : fallback } catch { return fallback } }
@@ -26,6 +27,11 @@ const findGoal = (id) => GOAL_LIBRARY.find((goal) => goal.id === id)
 const doneCount = (value) => Object.values(value || {}).reduce((sum, entry) => sum + (entry === 'done' ? 1 : entry && typeof entry === 'object' ? Object.values(entry).filter((item) => item === 'done').length : 0), 0)
 const questIndex = (key) => Math.abs([...key].reduce((sum, char) => ((sum * 31) + char.charCodeAt(0)) | 0, 7)) % SPECIAL_QUESTS.length
 const questStateFor = (key) => ({ questId: SPECIAL_QUESTS[questIndex(key)].id, changed: false, completedAt: null })
+const legacyJourneyMeters = (history, weekly, monthly, legacySpecial, weeklySpecials) => {
+  let meters = 0
+  Object.values(history).forEach((day) => { const count = Object.values(day || {}).filter((value) => value === 'done').length; meters += count * 20 + (count >= 3 ? 10 : 0) })
+  return meters + doneCount(weekly) * 100 + doneCount(monthly) * 500 + Object.values(legacySpecial).filter((value) => value === 'done').length * 50 + Object.values(weeklySpecials).filter((state) => state?.completedAt && !state.legacyReward).length * 50
+}
 
 export const iconFor = (goal) => ({ g02: '🔤', c04: '🎧' }[goal?.id] || goal?.icon || '🌱')
 
@@ -49,6 +55,10 @@ export default function App() {
   const [monthly, setMonthly] = useState(() => safeParse(localStorage.getItem(STORAGE.monthly), {}))
   const [legacySpecial, setLegacySpecial] = useState(initialLegacySpecial)
   const [weeklySpecials, setWeeklySpecials] = useState(() => safeParse(localStorage.getItem(STORAGE.weeklySpecials), {}))
+  const [journeyMeters, setJourneyMeters] = useState(() => {
+    const saved = Number(localStorage.getItem(STORAGE.journeyMeters))
+    return Number.isFinite(saved) && saved >= 0 ? saved : legacyJourneyMeters(initialHistory, safeParse(localStorage.getItem(STORAGE.weekly), {}), safeParse(localStorage.getItem(STORAGE.monthly), {}), initialLegacySpecial, safeParse(localStorage.getItem(STORAGE.weeklySpecials), {}))
+  })
   const [completionLog, setCompletionLog] = useState(() => safeParse(localStorage.getItem(STORAGE.completionLog), []))
   const [reminders, setReminders] = useState(() => {
     const saved = safeParse(localStorage.getItem(STORAGE.reminders), {})
@@ -96,6 +106,7 @@ export default function App() {
   useEffect(() => localStorage.setItem(STORAGE.weeklySpecials, JSON.stringify(weeklySpecials)), [weeklySpecials])
   useEffect(() => localStorage.setItem(STORAGE.completionLog, JSON.stringify(completionLog)), [completionLog])
   useEffect(() => localStorage.setItem(STORAGE.reminders, JSON.stringify(reminders)), [reminders])
+  useEffect(() => localStorage.setItem(STORAGE.journeyMeters, String(journeyMeters)), [journeyMeters])
   useEffect(() => { if (profile) localStorage.setItem(STORAGE.profile, JSON.stringify(profile)) }, [profile])
 
   const currentWeek = weekKey(now)
@@ -118,14 +129,7 @@ export default function App() {
     })
   }, [history, legacySpecial, weeklySpecials])
 
-  const totalMeters = useMemo(() => {
-    let meters = 0
-    Object.values(history).forEach((day) => { const count = Object.values(day || {}).filter((value) => value === 'done').length; meters += count * 20; if (count >= 3) meters += 10 })
-    meters += doneCount(weekly) * 100 + doneCount(monthly) * 500
-    meters += Object.values(legacySpecial).filter((value) => value === 'done').length * 50
-    meters += Object.values(weeklySpecials).filter((state) => state?.completedAt && !state.legacyReward).length * 50
-    return meters
-  }, [history, weekly, monthly, legacySpecial, weeklySpecials])
+  const totalMeters = journeyMeters
   const discoveries = useJourneyDiscoveries(totalMeters)
 
   const today = dateKey(now)
@@ -163,11 +167,14 @@ export default function App() {
         type: 'daily', rewardMeters: 20, completedAt: new Date().toISOString(),
       }] : records.filter((record) => record.id !== `daily:${today}:${goalId}`))
       if (completing) {
+        const pace = paceForMeters(totalMeters)
+        setJourneyMeters((meters) => meters + dailyRewardForCount(before, pace))
         const firstEver = !Object.values(current).some((record) => Object.values(record || {}).some((value) => value === 'done'))
         if (before < 3 && after >= 3) showFeedback({ meters: 30, title: '오늘의 작은 성공! ✨', detail: '세 걸음을 쌓았어요. 더 하지 않아도 충분해요.' })
         else if (firstEver) showFeedback({ meters: 20, title: '첫 20m를 걸었어요! 🌱', detail: '작은 행동 하나가 My Pace에서는 한 걸음이 돼요.' })
         else showFeedback({ meters: 20 })
       }
+      if (!completing) setJourneyMeters((meters) => Math.max(0, meters - dailyRewardForCount(before - 1, paceForMeters(Math.max(0, meters - 1)))))
       return { ...current, [today]: nextDay }
     })
   }
@@ -176,6 +183,7 @@ export default function App() {
     const completing = !specialState.completedAt
     const completedAt = completing ? new Date().toISOString() : null
     setWeeklySpecials((current) => ({ ...current, [currentWeek]: { ...specialState, completedAt } }))
+    setJourneyMeters((meters) => Math.max(0, meters + (completing ? 50 : -50)))
     setCompletionLog((records) => completing ? [...records.filter((record) => record.id !== `weekly-special:${currentWeek}`), {
       id: `weekly-special:${currentWeek}`, date: today, goalId: weeklySpecial.id, title: weeklySpecial.title,
       category: 'special', type: 'special', rewardMeters: 50, completedAt,
@@ -198,12 +206,12 @@ export default function App() {
     if (!window.confirm('모든 기록과 설정을 삭제할까요?\n이 작업은 되돌릴 수 없어요.')) return
     Object.values(STORAGE).forEach((key) => localStorage.removeItem(key))
     discoveries.clearDiscoveries()
-    setProfile(null); setHistory({}); setWeekly({}); setMonthly({}); setLegacySpecial({}); setWeeklySpecials({}); setCompletionLog([]); setReminders(DEFAULT_REMINDERS); setTheme('auto'); navigate('today', 'main', { replace: true })
+    setProfile(null); setHistory({}); setWeekly({}); setMonthly({}); setLegacySpecial({}); setWeeklySpecials({}); setJourneyMeters(0); setCompletionLog([]); setReminders(DEFAULT_REMINDERS); setTheme('auto'); navigate('today', 'main', { replace: true })
   }
 
   if (!profile || showOnboarding) return <Onboarding initialProfile={profile} onFinish={finishOnboarding} onCancel={profile ? () => setShowOnboarding(false) : null} />
   const actualDiscoveries = useMemo(() => discoveredMilestones(discoveries.discoveredIds), [discoveries.discoveredIds])
-  const shared = { profile, dailyGoals, totalMeters, history, legacySpecial, weeklySpecials, completionLog, now, discoveredIds: discoveries.discoveredIds, actualDiscoveries }
+  const shared = { profile, dailyGoals, totalMeters, currentPace: paceForMeters(totalMeters), history, legacySpecial, weeklySpecials, completionLog, now, discoveredIds: discoveries.discoveredIds, actualDiscoveries }
   return <div className="app app-shell"><div className="viewport">
     {tab === 'today' && <Today {...shared} todayState={todayState} completedCount={completedCount} weeklySpecial={weeklySpecial} specialState={specialState} toggleDaily={toggleDaily} toggleSpecial={toggleWeeklySpecial} changeSpecial={changeWeeklySpecial} />}
     {tab === 'journey' && <Journey {...shared} {...discoveries} />}
