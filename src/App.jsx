@@ -131,6 +131,7 @@ export default function App() {
 
   const totalMeters = journeyMeters
   const discoveries = useJourneyDiscoveries(totalMeters)
+  const actualDiscoveries = useMemo(() => discoveredMilestones(discoveries.discoveredIds), [discoveries.discoveredIds])
 
   const today = dateKey(now)
   const dailyGoals = (profile?.dailyGoalIds || []).map(findGoal).filter(Boolean)
@@ -210,7 +211,6 @@ export default function App() {
   }
 
   if (!profile || showOnboarding) return <Onboarding initialProfile={profile} onFinish={finishOnboarding} onCancel={profile ? () => setShowOnboarding(false) : null} />
-  const actualDiscoveries = useMemo(() => discoveredMilestones(discoveries.discoveredIds), [discoveries.discoveredIds])
   const shared = { profile, dailyGoals, totalMeters, currentPace: paceForMeters(totalMeters), history, legacySpecial, weeklySpecials, completionLog, now, discoveredIds: discoveries.discoveredIds, actualDiscoveries }
   return <div className="app app-shell"><div className="viewport">
     {tab === 'today' && <Today {...shared} todayState={todayState} completedCount={completedCount} weeklySpecial={weeklySpecial} specialState={specialState} toggleDaily={toggleDaily} toggleSpecial={toggleWeeklySpecial} changeSpecial={changeWeeklySpecial} />}
