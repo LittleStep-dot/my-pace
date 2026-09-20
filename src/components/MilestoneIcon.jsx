@@ -67,6 +67,6 @@ const displayScale = {
 
 export default function MilestoneIcon({ milestone }) {
   const asset = collectionArt[milestone.id]
-  if (asset) return <span className="collection-art-frame" style={{ '--collection-art-scale': displayScale[milestone.id] || 1.16 }}><img className="collection-art" src={`${import.meta.env.BASE_URL}art/collections/${asset}`} alt="" /></span>
+  if (asset) return <span className="collection-art-frame" style={{ '--collection-art-scale': (displayScale[milestone.id] || 1.16) / 1.16 }}><img className="collection-art" src={`${import.meta.env.BASE_URL}art/collections/${asset}`} alt="" /></span>
   return milestone.id === 'first-step' ? <FootprintIcon /> : milestone.icon
 }
